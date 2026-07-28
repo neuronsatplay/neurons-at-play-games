@@ -1,0 +1,1853 @@
+<!doctype html>
+<html lang="en" data-layout="phone" data-layout-preference="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Rainbow Road Multiplication | Neurons at Play</title>
+  <style>
+    :root {
+      --ink: #142642;
+      --muted: #53657d;
+      --blue: #2768e8;
+      --blue-dark: #174da9;
+      --teal: #087f76;
+      --green: #137f55;
+      --red: #b63232;
+      --line: #cbdcf2;
+      --surface: #ffffff;
+      --soft: #f5f9ff;
+      --shadow: 0 16px 42px rgba(34, 72, 125, 0.14);
+      --radius: 26px;
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      padding: 14px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 4%, rgba(255, 209, 102, 0.2), transparent 26%),
+        radial-gradient(circle at 94% 7%, rgba(76, 201, 240, 0.18), transparent 25%),
+        linear-gradient(180deg, #fffdf8 0%, #eef5ff 100%);
+      font-family: ui-rounded, "Arial Rounded MT Bold", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 4px solid rgba(39, 104, 232, 0.28);
+      outline-offset: 2px;
+    }
+
+    .app {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+    }
+
+    .game-card {
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid #d7e4f5;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 72px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.97);
+      border-bottom: 1px solid #e6eef8;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .title-icon {
+      display: grid;
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      border-radius: 15px;
+      background: linear-gradient(145deg, #ff7466, #ffac2f);
+      box-shadow: 0 8px 18px rgba(255, 116, 102, 0.24);
+      font-size: 26px;
+      transform: rotate(-5deg);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.16rem, 4.5vw, 1.95rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.83rem;
+      font-weight: 750;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+    }
+
+    .table-badge {
+      min-width: 54px;
+      padding: 9px 11px;
+      color: var(--blue-dark);
+      background: #eaf2ff;
+      border: 1px solid #c9dcff;
+      border-radius: 999px;
+      font-weight: 950;
+      text-align: center;
+    }
+
+    .icon-button {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #cbd9ec;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 1.12rem;
+    }
+
+    .icon-button:hover { background: #f1f6fd; }
+    .icon-button:active { transform: scale(0.96); }
+
+    .parent-panel {
+      display: none;
+      padding: 16px;
+      background: #f7faff;
+      border-bottom: 1px solid #dbe7f6;
+    }
+
+    .parent-panel.open { display: block; }
+
+    .parent-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .parent-heading h2 {
+      margin: 0 0 3px;
+      font-size: 1.12rem;
+    }
+
+    .parent-heading p {
+      max-width: 68ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 650;
+      line-height: 1.4;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field label, .fieldset-label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 11px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      font-weight: 800;
+    }
+
+    .toggles {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 46px;
+      padding: 8px 10px;
+      background: #fff;
+      border: 1px solid #d7e4f4;
+      border-radius: 13px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .toggle input {
+      flex: 0 0 auto;
+      width: 21px;
+      height: 21px;
+      margin: 0;
+      accent-color: var(--blue);
+    }
+
+    .settings-actions {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 9px;
+      margin-top: 2px;
+    }
+
+    .settings-actions button {
+      min-height: 48px;
+      padding: 8px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .primary-button {
+      color: #fff;
+      background: linear-gradient(180deg, var(--blue), var(--blue-dark));
+      border: 0;
+      box-shadow: 0 7px 16px rgba(39, 104, 232, 0.22);
+    }
+
+    .secondary-button {
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #bfcfe3;
+    }
+
+    .reset-button {
+      color: #923838;
+      background: #fffafa;
+      border: 2px solid #dfa0a0;
+    }
+
+    .reset-button.confirming {
+      color: #fff;
+      background: #b63232;
+      border-color: #b63232;
+    }
+
+    .settings-status {
+      min-height: 20px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .path-panel {
+      position: relative;
+      min-height: 322px;
+      padding: 12px 12px 6px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #74d8ff 0%, #b9ecff 58%, #f2fcff 100%);
+      border-bottom: 1px solid #c8dff1;
+    }
+
+    .cloud-decoration {
+      position: absolute;
+      width: 84px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.82);
+      border-radius: 999px;
+      opacity: 0.88;
+      pointer-events: none;
+    }
+
+    .cloud-a {
+      top: 26px;
+      left: 7%;
+      box-shadow: 21px -11px 0 5px rgba(255,255,255,0.82), 47px 1px 0 -2px rgba(255,255,255,0.82);
+    }
+
+    .cloud-b {
+      top: 48px;
+      right: 9%;
+      width: 68px;
+      height: 25px;
+      box-shadow: 17px -8px 0 3px rgba(255,255,255,0.82), 37px 0 0 -2px rgba(255,255,255,0.82);
+    }
+
+    .stage {
+      position: relative;
+      width: min(900px, 100%);
+      height: 275px;
+      margin: 0 auto;
+    }
+
+    .path-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .path-shadow, .path-line, .path-dash {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .path-shadow { stroke: rgba(61,103,153,0.18); stroke-width: 13; }
+    .path-line { stroke: #1478e5; stroke-width: 6; }
+    .path-dash { stroke: rgba(255,255,255,0.78); stroke-width: 2; stroke-dasharray: 7 10; }
+
+    .start-icon, .finish-icon, .node {
+      position: absolute;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+    }
+
+    .start-icon, .finish-icon {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      place-items: center;
+      font-size: 43px;
+      filter: drop-shadow(0 5px 3px rgba(85,104,139,0.2));
+    }
+
+    .start-icon { left: 5%; top: 27%; }
+    .finish-icon { left: 94%; top: 72%; transition: transform 0.25s ease; }
+    .finish-icon.complete { transform: translate(-50%, -50%) scale(1.18); }
+
+    .node {
+      display: grid;
+      width: 57px;
+      height: 57px;
+      place-items: center;
+      color: #fff;
+      border: 4px solid rgba(255,255,255,0.94);
+      border-radius: 50%;
+      box-shadow: 0 7px 12px rgba(48,77,119,0.18);
+      font-size: 1.08rem;
+      font-weight: 950;
+    }
+
+    .node.empty {
+      color: #748aa6;
+      background: rgba(255,255,255,0.93) !important;
+    }
+
+    .node.current {
+      outline: 5px solid rgba(255,255,255,0.58);
+      animation: pulse 1.25s ease-in-out infinite;
+    }
+
+    .node.just-filled { animation: pop 0.42s cubic-bezier(.2,.9,.25,1.4); }
+
+    .node small {
+      display: block;
+      margin-top: -1px;
+      font-size: 0.55rem;
+      line-height: 1;
+      opacity: 0.86;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    @keyframes pop {
+      0% { transform: translate(-50%, -50%) scale(0.55); }
+      70% { transform: translate(-50%, -50%) scale(1.18); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .path-caption {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      width: max-content;
+      max-width: 94%;
+      padding: 7px 13px;
+      overflow: hidden;
+      color: #244c6f;
+      background: rgba(255,255,255,0.84);
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 900;
+      text-align: center;
+      text-overflow: ellipsis;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .path-panel.dark .path-caption { color: #fff; background: rgba(13,25,54,0.75); }
+    .path-panel.dark .cloud-decoration { opacity: 0.18; }
+
+    .play-panel {
+      display: grid;
+      grid-template-columns: 1.06fr 0.94fr;
+      gap: 16px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .question-area {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      text-align: center;
+      background: #fbfdff;
+      border: 1px solid #dbe6f3;
+      border-radius: 21px;
+    }
+
+    .progress-line {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 900;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 9px;
+      overflow: hidden;
+      background: #e5eef8;
+      border-radius: 999px;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #ff4d6d, #ff7a00, #ffd166, #8bd900, #00c2a8, #1677ff, #7b2cff);
+      border-radius: inherit;
+      transition: width 0.28s ease;
+    }
+
+    .question-label {
+      margin-top: 3px;
+      color: var(--teal);
+      font-size: 0.75rem;
+      font-weight: 950;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .question {
+      margin: 5px 0 9px;
+      font-size: clamp(2.65rem, 8vw, 4.8rem);
+      font-weight: 950;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .answer-display {
+      display: grid;
+      width: min(240px, 100%);
+      min-height: 62px;
+      place-items: center;
+      color: var(--ink);
+      background: #fff;
+      border: 3px solid #aec9eb;
+      border-radius: 18px;
+      font-size: 1.85rem;
+      font-weight: 950;
+    }
+
+    .answer-display.wrong {
+      background: #fff7f7;
+      border-color: #dc8d8d;
+      animation: shake 0.28s linear;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); }
+      75% { transform: translateX(7px); }
+    }
+
+    .feedback {
+      min-height: 25px;
+      margin-top: 8px;
+      font-weight: 900;
+    }
+
+    .feedback.good { color: var(--green); }
+    .feedback.bad { color: var(--red); }
+
+    .hint-wrap {
+      width: 100%;
+      margin-top: 7px;
+    }
+
+    .hint-button {
+      min-height: 44px;
+      padding: 7px 14px;
+      color: #225f71;
+      background: #eefbfc;
+      border: 1px solid #a9d9de;
+      border-radius: 13px;
+      cursor: pointer;
+      font-size: 0.86rem;
+      font-weight: 900;
+    }
+
+    .hint-model {
+      display: none;
+      width: 100%;
+      max-height: min(46vh, 360px);
+      margin-top: 7px;
+      padding: 10px;
+      overflow: auto;
+      background: #fffdf4;
+      border: 1px solid #eadca8;
+      border-radius: 13px;
+    }
+
+    .hint-model.show { display: block; }
+
+    .hint-summary {
+      margin-bottom: 8px;
+      color: #65531a;
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+
+    .array-stage {
+      display: grid;
+      gap: 8px;
+    }
+
+    .source-label {
+      color: #65531a;
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .object-line {
+      display: flex;
+      flex-wrap: wrap;
+      min-height: 52px;
+      max-height: 104px;
+      align-content: center;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 7px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #f6fbff, #e8f3ff);
+      border: 1px dashed #87afd2;
+      border-radius: 11px;
+    }
+
+    .array-object {
+      display: inline-grid;
+      position: relative;
+      z-index: 2;
+      width: var(--array-object-size, 22px);
+      height: var(--array-object-size, 22px);
+      place-items: center;
+      flex: 0 0 auto;
+      font-size: var(--array-object-size, 22px);
+      line-height: 1;
+      transform: translate(0, 0);
+      will-change: transform;
+    }
+
+    .array-glyph {
+      display: grid;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      place-items: center;
+      font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+      font-size: inherit;
+      line-height: 1;
+      transform: translate(
+        calc(-50% + var(--array-glyph-x, 0px)),
+        calc(-50% + var(--array-glyph-y, 0px))
+      );
+    }
+
+    .array-board {
+      display: grid;
+      justify-content: center;
+      gap: 3px;
+      padding: 7px;
+      background: #fff;
+      border: 2px solid #d4b84d;
+      border-radius: 11px;
+    }
+
+    .array-row {
+      display: grid;
+      grid-template-columns: 42px auto;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .array-row-label {
+      color: #5e4b0f;
+      font-size: 0.62rem;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .array-cells {
+      display: grid;
+      grid-template-columns: repeat(var(--array-columns), var(--array-cell-size, 24px));
+      gap: 2px;
+    }
+
+    .array-cell {
+      display: grid;
+      position: relative;
+      width: var(--array-cell-size, 24px);
+      height: var(--array-cell-size, 24px);
+      place-items: center;
+      overflow: visible;
+      background: #fff9dc;
+      border: 1px solid #dfc967;
+      border-radius: 5px;
+    }
+
+    .array-footer {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .replay-array-button {
+      min-height: 44px;
+      padding: 7px 12px;
+      color: #225f71;
+      background: #eefbfc;
+      border: 1px solid #a9d9de;
+      border-radius: 11px;
+      cursor: pointer;
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .array-status {
+      flex: 1;
+      color: #65531a;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    html[data-layout="phone"] .hint-model {
+      max-height: min(50vh, 340px);
+      padding: 8px;
+    }
+
+    html[data-layout="phone"] .array-board {
+      justify-content: stretch;
+      padding: 6px 3px;
+    }
+
+    html[data-layout="phone"] .array-row {
+      grid-template-columns: 38px auto;
+      gap: 3px;
+    }
+
+    html[data-layout="phone"] .array-footer {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    html[data-layout="phone"] .array-status {
+      min-height: 20px;
+      text-align: left;
+    }
+
+    html[data-reduced-motion="true"] .array-object {
+      transition: none !important;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      align-content: center;
+    }
+
+    .key {
+      min-height: 58px;
+      color: var(--ink);
+      background: linear-gradient(180deg, #fff, #f1f6fc);
+      border: 1px solid #c7d6e8;
+      border-radius: 16px;
+      box-shadow: 0 4px 9px rgba(49,83,127,0.08);
+      cursor: pointer;
+      font-size: 1.28rem;
+      font-weight: 950;
+    }
+
+    .key:active { transform: translateY(2px) scale(0.98); }
+    .key.clear { color: #963a3a; background: #fff8f8; }
+    .key.enter { color: #fff; background: linear-gradient(180deg, #1fae78, #117c54); border-color: #117c54; }
+
+    .complete-card {
+      display: none;
+      grid-column: 1 / -1;
+      padding: 22px 18px;
+      text-align: center;
+      background: linear-gradient(180deg, #fff8df, #fffdf4);
+      border: 1px solid #f1cf79;
+      border-radius: 21px;
+    }
+
+    .complete-card.show { display: block; animation: rise 0.42s ease-out; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .complete-icon { margin-bottom: 6px; font-size: 4rem; line-height: 1; }
+    .complete-card h2 { margin: 0 0 6px; font-size: clamp(1.6rem, 5vw, 2.25rem); }
+    .complete-card p { margin: 0 0 15px; color: var(--muted); font-weight: 750; }
+
+    .completion-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    .completion-actions button {
+      min-height: 48px;
+      padding: 8px 18px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -22px;
+      z-index: 20;
+      width: 11px;
+      height: 17px;
+      border-radius: 3px;
+      pointer-events: none;
+      animation: fall 2.3s linear forwards;
+    }
+
+    @keyframes fall {
+      to { opacity: 0.94; transform: translate3d(var(--drift), 110vh, 0) rotate(720deg); }
+    }
+
+    html[data-large-controls="true"] .key { min-height: 70px; font-size: 1.5rem; }
+    html[data-large-controls="true"] .icon-button { width: 50px; height: 50px; }
+    html[data-large-controls="true"] .settings-actions button { min-height: 54px; }
+
+    html[data-reduced-motion="true"] *,
+    html[data-reduced-motion="true"] *::before,
+    html[data-reduced-motion="true"] *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    .game-card:fullscreen {
+      min-height: 100%;
+      overflow: auto;
+      background: #fff;
+      border: 0;
+      border-radius: 0;
+    }
+
+    body.pseudo-fullscreen { padding: 0; overflow: hidden; }
+
+    body.pseudo-fullscreen .app {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      overflow: auto;
+      background: #eef5ff;
+    }
+
+    body.pseudo-fullscreen .game-card { min-height: 100%; border: 0; border-radius: 0; }
+
+    html[data-layout="phone"] body { padding: 7px; }
+    html[data-layout="phone"] .app { max-width: 480px; }
+    html[data-layout="phone"] .header { min-height: 62px; padding: 9px 10px; }
+    html[data-layout="phone"] .title-icon { width: 39px; height: 39px; font-size: 22px; }
+    html[data-layout="phone"] .subtitle, html[data-layout="phone"] .table-badge { display: none; }
+    html[data-layout="phone"] .header-actions { gap: 4px; }
+    html[data-layout="phone"] .icon-button { width: 44px; height: 44px; }
+    html[data-layout="phone"] .parent-panel { padding: 12px; }
+    html[data-layout="phone"] .settings-grid { grid-template-columns: 1fr; }
+    html[data-layout="phone"] .toggles { grid-column: 1; grid-template-columns: 1fr; }
+    html[data-layout="phone"] .settings-actions { grid-column: 1; grid-template-columns: 1fr; }
+    html[data-layout="phone"] .path-panel { min-height: 238px; padding: 6px 4px 3px; }
+    html[data-layout="phone"] .stage { height: 218px; }
+    html[data-layout="phone"] .start-icon, html[data-layout="phone"] .finish-icon { width: 41px; height: 41px; font-size: 31px; }
+    html[data-layout="phone"] .node { width: 38px; height: 38px; border-width: 3px; font-size: 0.78rem; }
+    html[data-layout="phone"] .node small { font-size: 0.43rem; }
+    html[data-layout="phone"] .path-caption { font-size: 0.69rem; }
+    html[data-layout="phone"] .play-panel { grid-template-columns: 1fr; gap: 9px; padding: 9px; }
+    html[data-layout="phone"] .question-area { padding: 11px 9px; }
+    html[data-layout="phone"] .question { margin: 3px 0 7px; font-size: 2.7rem; }
+    html[data-layout="phone"] .answer-display { min-height: 54px; }
+    html[data-layout="phone"] .keypad { gap: 7px; }
+    html[data-layout="phone"] .key { min-height: 51px; }
+    html[data-layout="phone"][data-large-controls="true"] .key { min-height: 70px; }
+    html[data-layout="phone"][data-large-controls="true"] .icon-button { width: 50px; height: 50px; }
+
+    html[data-layout="tablet"] body { padding: 11px; }
+    html[data-layout="tablet"] .app { max-width: 900px; }
+    html[data-layout="tablet"] .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    html[data-layout="tablet"] .toggles { grid-column: 1 / -1; }
+    html[data-layout="tablet"] .settings-actions { grid-column: 1 / -1; }
+    html[data-layout="tablet"] .play-panel { grid-template-columns: 1fr; }
+    html[data-layout="tablet"] .stage { height: 275px; }
+
+    html[data-layout="computer"] body { padding: 0; background: #f3f7fd; }
+    html[data-layout="computer"] .app { width: 100%; max-width: none; }
+    html[data-layout="computer"] .game-card { min-height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
+    html[data-layout="computer"] .header, html[data-layout="computer"] .parent-panel { padding-left: clamp(28px, 5vw, 76px); padding-right: clamp(28px, 5vw, 76px); }
+    html[data-layout="computer"] .path-panel { min-height: 395px; padding-left: clamp(20px, 4vw, 62px); padding-right: clamp(20px, 4vw, 62px); }
+    html[data-layout="computer"] .stage { width: min(1280px, 96%); height: 340px; }
+    html[data-layout="computer"] .node { width: 70px; height: 70px; font-size: 1.34rem; }
+    html[data-layout="computer"] .node small { font-size: 0.66rem; }
+    html[data-layout="computer"] .play-panel { width: min(1280px, 96%); margin: 0 auto; padding: 20px 0 28px; }
+
+    @media (orientation: landscape) {
+      html[data-layout="tablet"] .app { max-width: 1080px; }
+      html[data-layout="tablet"] .play-panel { grid-template-columns: 1.06fr 0.94fr; }
+      html[data-layout="tablet"] .path-panel { min-height: 292px; }
+      html[data-layout="tablet"] .stage { height: 258px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="game-card" id="gameCard" aria-label="Rainbow Road Multiplication game">
+      <header class="header">
+        <div class="brand">
+          <div class="title-icon" id="titleIcon" aria-hidden="true">🌈</div>
+          <div>
+            <h1>Rainbow Road Multiplication</h1>
+            <div class="subtitle" id="themeSubtitle">Build the colorful number path.</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="table-badge" id="tableBadge" aria-label="Current times table">× 2</div>
+          <button class="icon-button" id="fullscreenButton" type="button" aria-label="Enter fullscreen" title="Fullscreen">⛶</button>
+          <button class="icon-button" id="settingsButton" type="button" aria-label="Open parent setup" aria-expanded="false" title="Parent setup">⚙️</button>
+        </div>
+      </header>
+
+      <section class="parent-panel" id="parentPanel" aria-labelledby="parentSetupHeading">
+        <div class="parent-heading">
+          <div>
+            <h2 id="parentSetupHeading">Parent setup</h2>
+            <p>Choose only what fits this practice session. Settings and progress stay in this browser on this device.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="field">
+            <label for="nicknameInput">Optional nickname</label>
+            <input id="nicknameInput" type="text" value="Player" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false">
+          </div>
+
+          <div class="field">
+            <label for="tableSelect">Starting times table</label>
+            <select id="tableSelect"></select>
+          </div>
+
+          <div class="field">
+            <label for="factLimitSelect">Facts included</label>
+            <select id="factLimitSelect">
+              <option value="2">×1 through ×2</option>
+              <option value="5">×1 through ×5</option>
+              <option value="10">×1 through ×10</option>
+              <option value="12" selected>×1 through ×12</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="questionCountSelect">Path length</label>
+            <select id="questionCountSelect">
+              <option value="10">10 questions</option>
+              <option value="12" selected>12 questions</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="orderSelect">Question order</label>
+            <select id="orderSelect">
+              <option value="fixed" selected>In order</option>
+              <option value="random">Mixed order</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="hintModeSelect">Animation hint</label>
+            <select id="hintModeSelect">
+              <option value="optional" selected>Optional button</option>
+              <option value="always">Start automatically</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="displayModeSelect">Layout</label>
+            <select id="displayModeSelect">
+              <option value="auto" selected>Auto</option>
+              <option value="phone">Phone</option>
+              <option value="tablet">Tablet</option>
+              <option value="computer">Computer</option>
+            </select>
+          </div>
+
+          <div class="toggles">
+            <label class="toggle"><input type="checkbox" id="repeatMissedInput" checked> Mix a missed fact back in later</label>
+            <label class="toggle"><input type="checkbox" id="largeControlsInput"> Larger controls</label>
+            <label class="toggle"><input type="checkbox" id="reducedMotionInput"> Reduced animation</label>
+          </div>
+
+          <div class="settings-actions">
+            <button class="primary-button" id="applySettingsButton" type="button">Start with These Settings</button>
+            <button class="secondary-button" id="restartPathButton" type="button">Restart This Path</button>
+            <button class="reset-button" id="resetDefaultsButton" type="button">Reset to Defaults</button>
+          </div>
+        </div>
+
+        <p class="settings-status" id="settingsStatus" role="status">No account is needed. Personalization is never sent anywhere.</p>
+      </section>
+
+      <section class="path-panel" id="pathPanel" aria-label="Rainbow Road progress">
+        <div class="cloud-decoration cloud-a"></div>
+        <div class="cloud-decoration cloud-b"></div>
+        <div class="stage" id="stage">
+          <svg class="path-svg" viewBox="0 0 1000 320" preserveAspectRatio="none" aria-hidden="true">
+            <path class="path-shadow" id="pathShadow" d="M55 85 C180 48 620 44 790 78 C885 97 919 163 864 218 C775 306 278 276 110 234 C54 220 31 185 61 159 C145 89 690 121 945 228"></path>
+            <path class="path-line" id="pathLine" d="M55 85 C180 48 620 44 790 78 C885 97 919 163 864 218 C775 306 278 276 110 234 C54 220 31 185 61 159 C145 89 690 121 945 228"></path>
+            <path class="path-dash" id="pathDash" d="M55 85 C180 48 620 44 790 78 C885 97 919 163 864 218 C775 306 278 276 110 234 C54 220 31 185 61 159 C145 89 690 121 945 228"></path>
+          </svg>
+          <div class="start-icon" id="startIcon" aria-label="Start">🌟</div>
+          <div class="finish-icon" id="finishIcon" aria-label="Finish">☁️</div>
+          <div id="nodesContainer"></div>
+          <div class="path-caption" id="pathCaption">Answer correctly to fill the next circle.</div>
+        </div>
+      </section>
+
+      <section class="play-panel" id="playPanel">
+        <div class="question-area" id="questionArea">
+          <div class="progress-line">
+            <span id="progressText">0 of 12</span>
+            <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+          <div class="question-label">Solve</div>
+          <div class="question" id="questionText">2 × 1 = ?</div>
+          <div class="answer-display" id="answerDisplay" aria-live="polite">_</div>
+          <div class="feedback" id="feedback" aria-live="polite"></div>
+          <div class="hint-wrap" id="hintWrap">
+            <button class="hint-button" id="hintButton" type="button" aria-expanded="false">Show animation hint</button>
+            <div class="hint-model" id="hintModel">
+              <div class="hint-summary" id="hintSummary"></div>
+              <div class="array-stage" id="arrayStage">
+                <div class="source-label">Waiting line</div>
+                <div class="object-line" id="objectLine" aria-hidden="true"></div>
+                <div class="array-board" id="arrayBoard" aria-hidden="true"></div>
+                <div class="array-footer">
+                  <button class="replay-array-button" id="replayArrayButton" type="button">Replay array</button>
+                  <span class="array-status" id="arrayStatus" role="status" aria-live="polite"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="keypad" id="keypad" aria-label="Number keypad">
+          <button class="key" type="button" data-key="1">1</button>
+          <button class="key" type="button" data-key="2">2</button>
+          <button class="key" type="button" data-key="3">3</button>
+          <button class="key" type="button" data-key="4">4</button>
+          <button class="key" type="button" data-key="5">5</button>
+          <button class="key" type="button" data-key="6">6</button>
+          <button class="key" type="button" data-key="7">7</button>
+          <button class="key" type="button" data-key="8">8</button>
+          <button class="key" type="button" data-key="9">9</button>
+          <button class="key clear" type="button" data-action="clear">Clear</button>
+          <button class="key" type="button" data-key="0">0</button>
+          <button class="key enter" type="button" data-action="check" aria-label="Check answer">✓</button>
+        </div>
+
+        <div class="complete-card" id="completeCard" aria-live="polite">
+          <div class="complete-icon" id="completeIcon" aria-hidden="true">🌈</div>
+          <h2 id="completeHeading">Rainbow Road complete!</h2>
+          <p id="completeText">You completed this path.</p>
+          <div class="completion-actions">
+            <button class="secondary-button" id="replayButton" type="button">Replay This Path</button>
+            <button class="primary-button" id="nextTableButton" type="button">Next Times Table</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "neuronsAtPlay.rainbowRoadMultiplication.public.v1";
+
+    const DEFAULTS = Object.freeze({
+      nickname: "Player",
+      table: 2,
+      factLimit: 12,
+      questionCount: 12,
+      order: "fixed",
+      hintMode: "optional",
+      repeatMissed: true,
+      displayMode: "auto",
+      largeControls: false,
+      reducedMotion: false
+    });
+
+    const themes = {
+      2: { name: "Rainbow Sky", icon: "🌈", subtitle: "Follow a bright rainbow through the 2 times table.", background: "linear-gradient(180deg,#74d8ff 0%,#b9ecff 58%,#f2fcff 100%)", line: "#1478e5", shadow: "rgba(20,79,150,.28)", start: "🌟", finish: "☁️", reward: "🌈", dark: false, colors: ["#f02f55","#ec6700","#c89600","#61a500","#008f7d","#087fa0","#166ad5","#3d55da","#7026df","#a82ccc","#d1268d","#df3f82"] },
+      3: { name: "Jungle Vine", icon: "🌿", subtitle: "Swing through the jungle with the 3 times table.", background: "linear-gradient(180deg,#77e08a 0%,#b8f49d 56%,#f2ffe7 100%)", line: "#148a45", shadow: "rgba(19,93,52,.28)", start: "🐒", finish: "🦜", reward: "🌴", dark: false, colors: ["#e64d42","#dd7900","#b88c00","#578c16","#168c81","#087f9a","#176da4","#5940d7","#a146ca","#cf3d91","#278a70","#c48d00"] },
+      4: { name: "Space Trail", icon: "🚀", subtitle: "Blast through space with the 4 times table.", background: "radial-gradient(circle at 20% 20%,#4258c9 0%,transparent 24%),radial-gradient(circle at 80% 18%,#7b3ac8 0%,transparent 20%),linear-gradient(180deg,#081a46 0%,#172a68 62%,#273d7d 100%)", line: "#67d7ff", shadow: "rgba(0,0,0,.38)", start: "🚀", finish: "🪐", reward: "🌌", dark: true, colors: ["#008baa","#256bc4","#4b36c8","#6624cf","#8625c8","#a82bc6","#ca388b","#dc4b21","#da7900","#c09000","#2789a4","#008f80"] },
+      5: { name: "Ocean Bubbles", icon: "🐳", subtitle: "Dive into the ocean with the 5 times table.", background: "linear-gradient(180deg,#2dd4e8 0%,#69e4f2 48%,#c7faff 100%)", line: "#0077b6", shadow: "rgba(0,85,130,.28)", start: "🐠", finish: "🐚", reward: "🐋", dark: false, colors: ["#0079a7","#1585a4","#20869a","#009d91","#008c69","#278167","#b38b00","#c88600","#d16a00","#df4d42","#cc1e69","#6424d0"] },
+      6: { name: "Candy Path", icon: "🍭", subtitle: "Race along a candy-bright 6 times table.", background: "linear-gradient(180deg,#ff9bd8 0%,#ffc0e8 48%,#fff1fa 100%)", line: "#b82478", shadow: "rgba(142,21,91,.26)", start: "🍭", finish: "🍬", reward: "🧁", dark: false, colors: ["#d20b67","#c63395","#d23d9b","#b88b00","#d16800","#5c8f16","#008e6c","#0087aa","#007ca8","#2e6ed4","#7040b8","#a14ac0"] },
+      7: { name: "Mountain Adventure", icon: "🏔️", subtitle: "Climb the mountain with the 7 times table.", background: "linear-gradient(180deg,#70c8ff 0%,#b7dfff 48%,#e8f4d8 100%)", line: "#396ea8", shadow: "rgba(42,71,110,.28)", start: "🥾", finish: "🏔️", reward: "⛰️", dark: false, colors: ["#2f70bd","#146daf","#526879","#278269","#1f8077","#5b8f18","#bd8200","#bf9000","#d16000","#c6543f","#d93f46","#5940c4"] },
+      8: { name: "Night Stars", icon: "✨", subtitle: "Light up the night with the 8 times table.", background: "radial-gradient(circle at 16% 18%,#263d8f 0%,transparent 24%),radial-gradient(circle at 82% 14%,#5c2e91 0%,transparent 23%),linear-gradient(180deg,#07142f 0%,#152a59 58%,#263d70 100%)", line: "#8ce8ff", shadow: "rgba(0,0,0,.4)", start: "🌙", finish: "⭐", reward: "🌠", dark: true, colors: ["#172b9e","#273bc0","#2d6bc7","#0089b5","#28829a","#5b925f","#bf8100","#d25d00","#ce3558","#a146c8","#6b2bc8","#5737c4"] },
+      9: { name: "Flower Garden", icon: "🌸", subtitle: "Grow a bright garden with the 9 times table.", background: "linear-gradient(180deg,#9be7a1 0%,#d0f5ae 50%,#fff3c9 100%)", line: "#3b8b48", shadow: "rgba(37,105,49,.26)", start: "🐝", finish: "🌻", reward: "💐", dark: false, colors: ["#d52269","#c73391","#d75c39","#b98900","#c48e00","#598e17","#278269","#008b78","#1683a0","#286bc1","#6424c5","#d53d45"] },
+      10: { name: "Race Track", icon: "🏎️", subtitle: "Speed around the track with the 10 times table.", background: "linear-gradient(180deg,#8bd2ff 0%,#c7ebff 48%,#eaf4e7 100%)", line: "#344b66", shadow: "rgba(36,53,73,.3)", start: "🏁", finish: "🏆", reward: "🏆", dark: false, colors: ["#1f1f1f","#555","#cf1b1b","#da3d1e","#d35d00","#af8d00","#5c9200","#008348","#00839a","#176dc4","#6424d0","#cd3d91"] },
+      11: { name: "Crystal Trail", icon: "💎", subtitle: "Collect glowing crystals with the 11 times table.", background: "linear-gradient(180deg,#a88bff 0%,#d2bcff 50%,#f2eaff 100%)", line: "#6845c5", shadow: "rgba(73,43,145,.28)", start: "🔮", finish: "💎", reward: "💠", dark: false, colors: ["#4b22c7","#6330ce","#8437c7","#9e48c4","#cc3b9d","#b88b00","#d36a00","#5c8f16","#008e75","#1682a0","#0086a8","#3470c8"] },
+      12: { name: "Celebration Parade", icon: "🎊", subtitle: "Finish with a celebration through the 12 times table.", background: "linear-gradient(180deg,#ffd45c 0%,#ffe89f 47%,#fff8dd 100%)", line: "#c65b00", shadow: "rgba(153,80,0,.27)", start: "🎈", finish: "🎉", reward: "🎊", dark: false, colors: ["#d81437","#d55b00","#d36a00","#ae9000","#5d9000","#008348","#008e6c","#00839a","#286bc1","#541fd0","#b100ca","#d42075"] }
+    };
+
+    const arrayObjects = [
+      { emoji: "🍪", plural: "cookies", glyphX: -1, glyphY: -1 },
+      { emoji: "⚽", plural: "balls", glyphX: 0, glyphY: -0.5 },
+      { emoji: "🖍️", plural: "crayons", glyphX: 0, glyphY: -0.5 },
+      { emoji: "🚗", plural: "cars", glyphX: 0, glyphY: -0.5 }
+    ];
+
+    const topPositions = [
+      { left: 14, top: 25 }, { left: 28, top: 22 }, { left: 42, top: 23 },
+      { left: 56, top: 21 }, { left: 70, top: 24 }, { left: 81, top: 34 }
+    ];
+
+    const bottomPositions = [
+      { left: 17, top: 70 }, { left: 32, top: 72 }, { left: 47, top: 70 },
+      { left: 62, top: 72 }, { left: 76, top: 69 }, { left: 86, top: 62 }
+    ];
+
+    const el = Object.fromEntries([
+      "gameCard", "fullscreenButton", "settingsButton", "parentPanel", "nicknameInput",
+      "tableSelect", "factLimitSelect", "questionCountSelect", "orderSelect", "hintModeSelect",
+      "repeatMissedInput", "displayModeSelect", "largeControlsInput", "reducedMotionInput",
+      "applySettingsButton", "restartPathButton", "resetDefaultsButton", "settingsStatus",
+      "titleIcon", "themeSubtitle", "tableBadge", "pathPanel", "pathLine", "pathShadow",
+      "pathDash", "startIcon", "finishIcon", "nodesContainer", "pathCaption", "questionArea",
+      "questionText", "answerDisplay", "feedback", "hintWrap", "hintButton", "hintModel",
+      "hintSummary", "arrayStage", "objectLine", "arrayBoard", "replayArrayButton",
+      "arrayStatus", "keypad", "progressText", "progressFill", "completeCard",
+      "completeIcon", "completeHeading", "completeText", "replayButton", "nextTableButton"
+    ].map(id => [id, document.getElementById(id)]));
+
+    let settings = { ...DEFAULTS };
+    const state = {
+      table: DEFAULTS.table,
+      questions: [],
+      index: 0,
+      input: "",
+      completed: false,
+      lastFilled: -1,
+      hintOpen: false,
+      arrayRun: 0,
+      arrayTimers: [],
+      resetTimer: null,
+      resizeFrame: null
+    };
+
+    function safeStorageGet() {
+      try { return window.localStorage.getItem(STORAGE_KEY); } catch (error) { return null; }
+    }
+
+    function safeStorageSet(value) {
+      try { window.localStorage.setItem(STORAGE_KEY, value); } catch (error) { /* Local files may block storage. */ }
+    }
+
+    function safeStorageRemove() {
+      try { window.localStorage.removeItem(STORAGE_KEY); } catch (error) { /* The page can still reset in memory. */ }
+    }
+
+    function normalizeNickname(value) {
+      const compact = String(value || "").replace(/\s+/g, " ").trim().slice(0, 24);
+      return compact || DEFAULTS.nickname;
+    }
+
+    function validChoice(value, choices, fallback) {
+      return choices.includes(value) ? value : fallback;
+    }
+
+    function sanitizeSettings(candidate = {}) {
+      const table = Number(candidate.table);
+      const factLimit = Number(candidate.factLimit);
+      const questionCount = Number(candidate.questionCount);
+      return {
+        nickname: normalizeNickname(candidate.nickname),
+        table: Number.isInteger(table) && table >= 2 && table <= 12 ? table : DEFAULTS.table,
+        factLimit: [2, 5, 10, 12].includes(factLimit) ? factLimit : DEFAULTS.factLimit,
+        questionCount: [10, 12].includes(questionCount) ? questionCount : DEFAULTS.questionCount,
+        order: validChoice(candidate.order, ["fixed", "random"], DEFAULTS.order),
+        hintMode: validChoice(candidate.hintMode, ["optional", "always", "hidden"], DEFAULTS.hintMode),
+        repeatMissed: candidate.repeatMissed !== false,
+        displayMode: validChoice(candidate.displayMode, ["auto", "phone", "tablet", "computer"], DEFAULTS.displayMode),
+        largeControls: Boolean(candidate.largeControls),
+        reducedMotion: Boolean(candidate.reducedMotion)
+      };
+    }
+
+    function shuffled(values) {
+      const copy = [...values];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function makeQuestion(table, multiplier) {
+      return { table, multiplier, answer: table * multiplier };
+    }
+
+    function buildQuestions(savedMultipliers = null) {
+      let multipliers = [];
+      if (
+        Array.isArray(savedMultipliers) &&
+        savedMultipliers.length === settings.questionCount &&
+        savedMultipliers.every(value => Number.isInteger(value) && value >= 1 && value <= settings.factLimit)
+      ) {
+        multipliers = [...savedMultipliers];
+      } else {
+        const base = Array.from({ length: settings.factLimit }, (_, index) => index + 1);
+        while (multipliers.length < settings.questionCount) {
+          const pass = settings.order === "random" ? shuffled(base) : base;
+          multipliers.push(...pass);
+        }
+        multipliers = multipliers.slice(0, settings.questionCount);
+        if (settings.order === "random") multipliers = shuffled(multipliers);
+      }
+
+      state.questions = multipliers.map(multiplier => makeQuestion(state.table, multiplier));
+      if (!validateQuestions(state.questions)) throw new Error("Invalid multiplication question set.");
+    }
+
+    function validateQuestions(questions) {
+      return questions.length === settings.questionCount && questions.every(question =>
+        Number.isInteger(question.table) &&
+        Number.isInteger(question.multiplier) &&
+        Number.isInteger(question.answer) &&
+        question.table >= 2 && question.table <= 12 &&
+        question.multiplier >= 1 && question.multiplier <= settings.factLimit &&
+        question.answer === question.table * question.multiplier
+      );
+    }
+
+    function readControls() {
+      return sanitizeSettings({
+        nickname: el.nicknameInput.value,
+        table: el.tableSelect.value,
+        factLimit: el.factLimitSelect.value,
+        questionCount: el.questionCountSelect.value,
+        order: el.orderSelect.value,
+        hintMode: el.hintModeSelect.value,
+        repeatMissed: el.repeatMissedInput.checked,
+        displayMode: el.displayModeSelect.value,
+        largeControls: el.largeControlsInput.checked,
+        reducedMotion: el.reducedMotionInput.checked
+      });
+    }
+
+    function writeControls() {
+      el.nicknameInput.value = settings.nickname;
+      el.tableSelect.value = String(settings.table);
+      el.factLimitSelect.value = String(settings.factLimit);
+      el.questionCountSelect.value = String(settings.questionCount);
+      el.orderSelect.value = settings.order;
+      el.hintModeSelect.value = settings.hintMode;
+      el.repeatMissedInput.checked = settings.repeatMissed;
+      el.displayModeSelect.value = settings.displayMode;
+      el.largeControlsInput.checked = settings.largeControls;
+      el.reducedMotionInput.checked = settings.reducedMotion;
+    }
+
+    function saveState() {
+      safeStorageSet(JSON.stringify({
+        version: 1,
+        settings,
+        progress: {
+          table: state.table,
+          multipliers: state.questions.map(question => question.multiplier),
+          index: state.index,
+          completed: state.completed,
+          lastFilled: state.lastFilled
+        }
+      }));
+    }
+
+    function restoreState() {
+      const raw = safeStorageGet();
+      if (!raw) return false;
+      try {
+        const saved = JSON.parse(raw);
+        if (!saved || saved.version !== 1) return false;
+        settings = sanitizeSettings(saved.settings);
+        const progress = saved.progress || {};
+        const table = Number(progress.table);
+        state.table = Number.isInteger(table) && table >= 2 && table <= 12 ? table : settings.table;
+        buildQuestions(progress.multipliers);
+        const index = Number(progress.index);
+        state.index = Number.isInteger(index) && index >= 0 && index <= state.questions.length ? index : 0;
+        state.completed = Boolean(progress.completed) && state.index === state.questions.length;
+        state.lastFilled = Number.isInteger(progress.lastFilled) ? progress.lastFilled : state.index - 1;
+        state.input = "";
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function automaticLayout() {
+      const width = Math.max(0, window.innerWidth || document.documentElement.clientWidth || 0);
+      const height = Math.max(0, window.innerHeight || document.documentElement.clientHeight || 0);
+      if (width <= 600 || (height <= 500 && width <= 950)) return "phone";
+      if (width <= 1100) return "tablet";
+      return "computer";
+    }
+
+    function applyPreferences(shouldSave = false) {
+      const effective = settings.displayMode === "auto" ? automaticLayout() : settings.displayMode;
+      document.documentElement.dataset.layout = effective;
+      document.documentElement.dataset.layoutPreference = settings.displayMode;
+      document.documentElement.dataset.largeControls = String(settings.largeControls);
+      document.documentElement.dataset.reducedMotion = String(settings.reducedMotion);
+      if (shouldSave) saveState();
+    }
+
+    function getNodePositions() {
+      if (settings.questionCount === 10) {
+        return [...topPositions.slice(0, 5), ...bottomPositions.slice(0, 5).reverse()];
+      }
+      return [...topPositions, ...bottomPositions.slice().reverse()];
+    }
+
+    function applyTheme() {
+      const theme = themes[state.table];
+      el.titleIcon.textContent = theme.icon;
+      el.themeSubtitle.textContent = `${settings.nickname}: ${theme.subtitle}`;
+      el.tableBadge.textContent = `× ${state.table}`;
+      el.pathPanel.style.background = theme.background;
+      el.pathPanel.classList.toggle("dark", theme.dark);
+      el.pathLine.style.stroke = theme.line;
+      el.pathShadow.style.stroke = theme.shadow;
+      el.pathDash.style.stroke = theme.dark ? "rgba(255,255,255,.72)" : "rgba(255,255,255,.82)";
+      el.startIcon.textContent = theme.start;
+      el.finishIcon.textContent = state.completed ? theme.reward : theme.finish;
+      el.progressFill.style.background = `linear-gradient(90deg,${theme.colors.join(",")})`;
+    }
+
+    function renderNodes() {
+      el.nodesContainer.textContent = "";
+      const positions = getNodePositions();
+      const theme = themes[state.table];
+      positions.forEach((position, index) => {
+        const node = document.createElement("div");
+        const solved = index < state.index;
+        const current = index === state.index && !state.completed;
+        node.className = `node${solved ? "" : " empty"}${current ? " current" : ""}${index === state.lastFilled ? " just-filled" : ""}`;
+        node.style.left = `${position.left}%`;
+        node.style.top = `${position.top}%`;
+        node.style.background = theme.colors[index % theme.colors.length];
+        if (solved) {
+          const question = state.questions[index];
+          const span = document.createElement("span");
+          span.append(document.createTextNode(String(question.answer)));
+          const small = document.createElement("small");
+          small.textContent = `${question.table}×${question.multiplier}`;
+          span.appendChild(small);
+          node.appendChild(span);
+          node.setAttribute("aria-label", `${question.table} times ${question.multiplier} equals ${question.answer}`);
+        } else {
+          node.textContent = "?";
+          node.setAttribute("aria-label", current ? "Current question" : "Upcoming question");
+        }
+        el.nodesContainer.appendChild(node);
+      });
+    }
+
+    function cancelArrayAnimation() {
+      state.arrayRun += 1;
+      state.arrayTimers.forEach(timer => window.clearTimeout(timer));
+      state.arrayTimers = [];
+    }
+
+    function scheduleArrayStep(callback, delay) {
+      const timer = window.setTimeout(() => {
+        state.arrayTimers = state.arrayTimers.filter(value => value !== timer);
+        callback();
+      }, delay);
+      state.arrayTimers.push(timer);
+    }
+
+    function arrayMotionIsReduced() {
+      return settings.reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    function arrayObjectSize(total) {
+      if (total > 96) return 10;
+      if (total > 48) return 12;
+      if (total > 24) return 15;
+      if (total > 12) return 18;
+      return 24;
+    }
+
+    function arrayCellSize(columns, total) {
+      if (columns >= 11) return 17;
+      if (columns >= 9) return 19;
+      if (columns >= 7) return 21;
+      if (total > 48) return 18;
+      return 24;
+    }
+
+    function prepareArrayAnimation(question) {
+      cancelArrayAnimation();
+      const run = state.arrayRun;
+      const object = arrayObjects[state.index % arrayObjects.length];
+      const cellSize = arrayCellSize(question.multiplier, question.answer);
+      const objectSize = Math.max(
+        8,
+        Math.min(arrayObjectSize(question.answer), Math.floor(cellSize * 0.68))
+      );
+
+      el.hintSummary.textContent = `Watch the ${object.plural} build ${question.table} rows with ${question.multiplier} in each row.`;
+      el.arrayStage.style.setProperty("--array-object-size", `${objectSize}px`);
+      el.arrayStage.style.setProperty("--array-cell-size", `${cellSize}px`);
+      el.arrayStage.style.setProperty("--array-columns", String(question.multiplier));
+      el.arrayStage.style.setProperty("--array-glyph-x", `${object.glyphX}px`);
+      el.arrayStage.style.setProperty("--array-glyph-y", `${object.glyphY}px`);
+      el.objectLine.textContent = "";
+      el.arrayBoard.textContent = "";
+      el.arrayStatus.textContent = "";
+
+      for (let index = 0; index < question.answer; index += 1) {
+        const item = document.createElement("span");
+        item.className = "array-object";
+        const glyph = document.createElement("span");
+        glyph.className = "array-glyph";
+        glyph.textContent = object.emoji;
+        item.appendChild(glyph);
+        item.setAttribute("aria-hidden", "true");
+        el.objectLine.appendChild(item);
+      }
+
+      const targetCells = [];
+      for (let rowIndex = 0; rowIndex < question.table; rowIndex += 1) {
+        const row = document.createElement("div");
+        row.className = "array-row";
+
+        const label = document.createElement("div");
+        label.className = "array-row-label";
+        label.textContent = `Row ${rowIndex + 1}`;
+
+        const cells = document.createElement("div");
+        cells.className = "array-cells";
+        for (let columnIndex = 0; columnIndex < question.multiplier; columnIndex += 1) {
+          const cell = document.createElement("div");
+          cell.className = "array-cell";
+          cells.appendChild(cell);
+          targetCells.push(cell);
+        }
+
+        row.append(label, cells);
+        el.arrayBoard.appendChild(row);
+      }
+
+      if (arrayMotionIsReduced()) {
+        [...el.objectLine.children].forEach((item, index) => {
+          targetCells[index].appendChild(item);
+        });
+        el.replayArrayButton.textContent = "Show array again";
+        el.arrayStatus.textContent = "Array complete. Count all the objects.";
+        return;
+      }
+
+      el.replayArrayButton.textContent = "Replay array";
+      el.arrayStatus.textContent = "Building the array one at a time…";
+      const stepDelay = Math.max(45, Math.min(260, Math.floor(5200 / question.answer)));
+      const moveDuration = Math.max(180, Math.min(340, stepDelay + 80));
+
+      function moveNext(index) {
+        if (run !== state.arrayRun) return;
+        const item = el.objectLine.firstElementChild;
+        if (!item) return;
+
+        const start = item.getBoundingClientRect();
+        targetCells[index].appendChild(item);
+        const end = item.getBoundingClientRect();
+        item.style.transition = "none";
+        item.style.transform = `translate(${start.left - end.left}px, ${start.top - end.top}px) scale(1.08)`;
+        void item.offsetWidth;
+
+        window.requestAnimationFrame(() => {
+          if (run !== state.arrayRun) return;
+          item.style.transition = `transform ${moveDuration}ms cubic-bezier(.2,.75,.25,1)`;
+          item.style.transform = "translate(0, 0) scale(1)";
+        });
+
+        if (index + 1 < question.answer) {
+          scheduleArrayStep(() => moveNext(index + 1), stepDelay);
+        } else {
+          scheduleArrayStep(() => {
+            if (run === state.arrayRun) {
+              el.arrayStatus.textContent = "Array complete. Count all the objects.";
+            }
+          }, moveDuration + 40);
+        }
+      }
+
+      scheduleArrayStep(() => moveNext(0), 300);
+    }
+
+    function renderHint() {
+      if (state.completed) return;
+      const question = state.questions[state.index];
+      const always = settings.hintMode === "always";
+      const hidden = settings.hintMode === "hidden";
+      el.hintWrap.hidden = hidden;
+      el.hintButton.hidden = always;
+      state.hintOpen = always ? true : state.hintOpen;
+      const showing = !hidden && state.hintOpen;
+      el.hintModel.classList.toggle("show", showing);
+      el.hintButton.setAttribute("aria-expanded", String(state.hintOpen));
+      el.hintButton.textContent = state.hintOpen ? "Hide animation hint" : "Show animation hint";
+
+      if (showing) {
+        prepareArrayAnimation(question);
+      } else {
+        cancelArrayAnimation();
+        el.hintSummary.textContent = "";
+        el.objectLine.textContent = "";
+        el.arrayBoard.textContent = "";
+        el.arrayStatus.textContent = "";
+      }
+    }
+
+    function renderQuestion() {
+      if (state.completed) return;
+      const question = state.questions[state.index];
+      el.questionText.textContent = `${question.table} × ${question.multiplier} = ?`;
+      el.answerDisplay.textContent = state.input || "_";
+      el.tableBadge.textContent = `× ${state.table}`;
+      renderHint();
+    }
+
+    function renderProgress() {
+      el.progressText.textContent = `${state.index} of ${settings.questionCount}`;
+      el.progressFill.style.width = `${(state.index / settings.questionCount) * 100}%`;
+      el.pathCaption.textContent = state.completed
+        ? `${settings.nickname} completed all ${settings.questionCount} stops!`
+        : `${themes[state.table].name}: fill circle ${state.index + 1} of ${settings.questionCount}.`;
+    }
+
+    function render() {
+      applyTheme();
+      renderNodes();
+      renderProgress();
+      if (!state.completed) renderQuestion();
+      else cancelArrayAnimation();
+      el.questionArea.hidden = state.completed;
+      el.keypad.hidden = state.completed;
+      el.completeCard.classList.toggle("show", state.completed);
+      el.finishIcon.classList.toggle("complete", state.completed);
+    }
+
+    function beginPath(table = settings.table, savedMultipliers = null) {
+      state.table = table;
+      settings.table = table;
+      state.index = 0;
+      state.input = "";
+      state.completed = false;
+      state.lastFilled = -1;
+      state.hintOpen = settings.hintMode === "always";
+      el.feedback.textContent = "";
+      el.feedback.className = "feedback";
+      el.answerDisplay.classList.remove("wrong");
+      buildQuestions(savedMultipliers);
+      writeControls();
+      applyPreferences(false);
+      render();
+      saveState();
+    }
+
+    function appendDigit(digit) {
+      if (state.completed || state.input.length >= 3) return;
+      state.input += digit;
+      el.answerDisplay.textContent = state.input;
+      el.answerDisplay.classList.remove("wrong");
+      el.feedback.textContent = "";
+      el.feedback.className = "feedback";
+    }
+
+    function clearInput() {
+      if (state.completed) return;
+      state.input = "";
+      el.answerDisplay.textContent = "_";
+      el.answerDisplay.classList.remove("wrong");
+      el.feedback.textContent = "";
+      el.feedback.className = "feedback";
+    }
+
+    function mixMissedFactBackIn(multiplier) {
+      if (!settings.repeatMissed || state.index >= state.questions.length - 1) return;
+      const target = Math.min(state.questions.length - 1, state.index + 2);
+      if (target > state.index) state.questions[target] = makeQuestion(state.table, multiplier);
+    }
+
+    function markWrong(hadInput) {
+      const current = state.questions[state.index];
+      if (hadInput) mixMissedFactBackIn(current.multiplier);
+      el.feedback.textContent = hadInput ? "Not yet. Try again." : "Enter an answer, then check it.";
+      el.feedback.className = "feedback bad";
+      el.answerDisplay.classList.remove("wrong");
+      void el.answerDisplay.offsetWidth;
+      el.answerDisplay.classList.add("wrong");
+      saveState();
+    }
+
+    function checkAnswer() {
+      if (state.completed) return;
+      const question = state.questions[state.index];
+      const submitted = state.input;
+      state.input = "";
+      el.answerDisplay.textContent = "_";
+      el.answerDisplay.classList.remove("wrong");
+
+      if (submitted === "" || Number(submitted) !== question.answer) {
+        markWrong(submitted !== "");
+        return;
+      }
+
+      state.lastFilled = state.index;
+      state.index += 1;
+      el.feedback.textContent = `Correct! Nice work, ${settings.nickname}.`;
+      el.feedback.className = "feedback good";
+      state.hintOpen = settings.hintMode === "always";
+
+      if (state.index >= state.questions.length) {
+        state.completed = true;
+        render();
+        showCompletion();
+      } else {
+        render();
+      }
+      saveState();
+    }
+
+    function showCompletion(launch = true) {
+      const theme = themes[state.table];
+      el.completeIcon.textContent = theme.reward;
+      el.completeHeading.textContent = `${theme.name} complete!`;
+      el.completeText.textContent = `${settings.nickname} completed the ${state.table} times-table path. Take as long as you like to enjoy it.`;
+      if (launch && !settings.reducedMotion && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        launchConfetti(theme.colors);
+      }
+    }
+
+    function launchConfetti(colors) {
+      for (let index = 0; index < 42; index += 1) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = colors[index % colors.length];
+        piece.style.animationDelay = `${Math.random() * 0.4}s`;
+        piece.style.animationDuration = `${1.8 + Math.random() * 0.9}s`;
+        piece.style.setProperty("--drift", `${-80 + Math.random() * 160}px`);
+        document.body.appendChild(piece);
+        window.setTimeout(() => piece.remove(), 3100);
+      }
+    }
+
+    function applySettings() {
+      settings = readControls();
+      el.settingsStatus.textContent = "Settings saved only in this browser. A new path is ready.";
+      beginPath(settings.table);
+      closeParentPanel();
+    }
+
+    function restartPath() {
+      el.settingsStatus.textContent = "This path has restarted with the current saved settings.";
+      beginPath(state.table);
+      closeParentPanel();
+    }
+
+    function clearResetConfirmation() {
+      if (state.resetTimer !== null) {
+        window.clearTimeout(state.resetTimer);
+        state.resetTimer = null;
+      }
+      el.resetDefaultsButton.classList.remove("confirming");
+      el.resetDefaultsButton.textContent = "Reset to Defaults";
+    }
+
+    function requestResetDefaults() {
+      if (!el.resetDefaultsButton.classList.contains("confirming")) {
+        el.resetDefaultsButton.classList.add("confirming");
+        el.resetDefaultsButton.textContent = "Tap Again to Reset";
+        el.settingsStatus.textContent = "This clears this game's local settings and progress.";
+        state.resetTimer = window.setTimeout(() => {
+          clearResetConfirmation();
+          el.settingsStatus.textContent = "Reset canceled. Nothing changed.";
+        }, 4000);
+        return;
+      }
+      clearResetConfirmation();
+      safeStorageRemove();
+      settings = { ...DEFAULTS };
+      beginPath(DEFAULTS.table);
+      el.settingsStatus.textContent = "Defaults restored. Local progress was cleared.";
+    }
+
+    function openParentPanel() {
+      writeControls();
+      el.parentPanel.classList.add("open");
+      el.settingsButton.setAttribute("aria-expanded", "true");
+      el.settingsStatus.textContent = "No account is needed. Personalization is never sent anywhere.";
+    }
+
+    function closeParentPanel() {
+      clearResetConfirmation();
+      el.parentPanel.classList.remove("open");
+      el.settingsButton.setAttribute("aria-expanded", "false");
+    }
+
+    function nativeFullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement || null;
+    }
+
+    function updateFullscreenButton() {
+      const active = Boolean(nativeFullscreenElement()) || document.body.classList.contains("pseudo-fullscreen");
+      el.fullscreenButton.textContent = active ? "↙" : "⛶";
+      el.fullscreenButton.setAttribute("aria-label", active ? "Exit fullscreen" : "Enter fullscreen");
+      el.fullscreenButton.title = active ? "Exit fullscreen" : "Fullscreen";
+    }
+
+    async function toggleFullscreen() {
+      if (nativeFullscreenElement()) {
+        try { await document.exitFullscreen(); } catch (error) { /* Keep the game usable if blocked. */ }
+        updateFullscreenButton();
+        return;
+      }
+      if (document.body.classList.contains("pseudo-fullscreen")) {
+        document.body.classList.remove("pseudo-fullscreen");
+        updateFullscreenButton();
+        return;
+      }
+      try {
+        if (el.gameCard.requestFullscreen) await el.gameCard.requestFullscreen();
+        else document.body.classList.add("pseudo-fullscreen");
+      } catch (error) {
+        document.body.classList.add("pseudo-fullscreen");
+      }
+      updateFullscreenButton();
+    }
+
+    function buildTableOptions() {
+      for (let number = 2; number <= 12; number += 1) {
+        const option = document.createElement("option");
+        option.value = String(number);
+        option.textContent = `${number} times table`;
+        el.tableSelect.appendChild(option);
+      }
+    }
+
+    el.settingsButton.addEventListener("click", () => {
+      if (el.parentPanel.classList.contains("open")) closeParentPanel(); else openParentPanel();
+    });
+
+    el.fullscreenButton.addEventListener("click", toggleFullscreen);
+    el.applySettingsButton.addEventListener("click", applySettings);
+    el.restartPathButton.addEventListener("click", restartPath);
+    el.resetDefaultsButton.addEventListener("click", requestResetDefaults);
+
+    el.displayModeSelect.addEventListener("change", () => {
+      settings.displayMode = validChoice(el.displayModeSelect.value, ["auto", "phone", "tablet", "computer"], "auto");
+      applyPreferences(true);
+      el.settingsStatus.textContent = settings.displayMode === "auto"
+        ? `Auto is using the ${automaticLayout()} layout for the current viewport.`
+        : `${settings.displayMode[0].toUpperCase()}${settings.displayMode.slice(1)} layout previewed and saved.`;
+    });
+
+    el.largeControlsInput.addEventListener("change", () => {
+      settings.largeControls = el.largeControlsInput.checked;
+      applyPreferences(true);
+      el.settingsStatus.textContent = settings.largeControls ? "Larger controls are on." : "Standard controls are on.";
+    });
+
+    el.reducedMotionInput.addEventListener("change", () => {
+      settings.reducedMotion = el.reducedMotionInput.checked;
+      applyPreferences(true);
+      if (state.hintOpen && !state.completed) renderHint();
+      el.settingsStatus.textContent = settings.reducedMotion ? "Reduced animation is on." : "Standard animation is on.";
+    });
+
+    el.hintButton.addEventListener("click", () => {
+      state.hintOpen = !state.hintOpen;
+      renderHint();
+      el.hintButton.blur();
+    });
+
+    el.replayArrayButton.addEventListener("click", () => {
+      if (!state.completed && state.hintOpen) {
+        prepareArrayAnimation(state.questions[state.index]);
+      }
+      el.replayArrayButton.blur();
+    });
+
+    el.keypad.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      if (button.dataset.key) appendDigit(button.dataset.key);
+      else if (button.dataset.action === "clear") clearInput();
+      else if (button.dataset.action === "check") checkAnswer();
+      button.blur();
+    });
+
+    el.replayButton.addEventListener("click", () => beginPath(state.table));
+    el.nextTableButton.addEventListener("click", () => beginPath(state.table === 12 ? 2 : state.table + 1));
+
+    document.addEventListener("keydown", event => {
+      const tag = event.target && event.target.tagName ? event.target.tagName.toUpperCase() : "";
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(tag)) return;
+      if (/^\d$/.test(event.key)) {
+        event.preventDefault();
+        appendDigit(event.key);
+      } else if (event.key === "Backspace" || event.key === "Delete") {
+        event.preventDefault();
+        clearInput();
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (!event.repeat) checkAnswer();
+      } else if (event.key === "Escape") {
+        if (document.body.classList.contains("pseudo-fullscreen")) {
+          document.body.classList.remove("pseudo-fullscreen");
+          updateFullscreenButton();
+        } else if (el.parentPanel.classList.contains("open")) {
+          closeParentPanel();
+        }
+      }
+    }, true);
+
+    window.addEventListener("resize", () => {
+      if (state.resizeFrame !== null) window.cancelAnimationFrame(state.resizeFrame);
+      state.resizeFrame = window.requestAnimationFrame(() => {
+        if (settings.displayMode === "auto") applyPreferences(false);
+        state.resizeFrame = null;
+      });
+    });
+
+    window.addEventListener("orientationchange", () => {
+      window.setTimeout(() => { if (settings.displayMode === "auto") applyPreferences(false); }, 100);
+    });
+
+    document.addEventListener("fullscreenchange", updateFullscreenButton);
+    window.addEventListener("pagehide", () => {
+      cancelArrayAnimation();
+      saveState();
+    });
+
+    buildTableOptions();
+    const restored = restoreState();
+    writeControls();
+    applyPreferences(false);
+    if (!restored) beginPath(DEFAULTS.table);
+    else {
+      render();
+      if (state.completed) showCompletion(false);
+    }
+    updateFullscreenButton();
+  </script>
+</body>
+</html>
