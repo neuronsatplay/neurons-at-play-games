@@ -1,0 +1,1806 @@
+<!doctype html>
+<html lang="en" data-layout="phone" data-layout-preference="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Rainbow Road Division | Neurons at Play</title>
+  <style>
+    :root {
+      --ink: #142642;
+      --muted: #53657d;
+      --blue: #2768e8;
+      --blue-dark: #174da9;
+      --teal: #087f76;
+      --green: #137f55;
+      --red: #b63232;
+      --line: #cbdcf2;
+      --surface: #ffffff;
+      --soft: #f5f9ff;
+      --shadow: 0 16px 42px rgba(34, 72, 125, 0.14);
+      --radius: 26px;
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      padding: 14px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 4%, rgba(255, 209, 102, 0.2), transparent 26%),
+        radial-gradient(circle at 94% 7%, rgba(76, 201, 240, 0.18), transparent 25%),
+        linear-gradient(180deg, #fffdf8 0%, #eef5ff 100%);
+      font-family: ui-rounded, "Arial Rounded MT Bold", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 4px solid rgba(39, 104, 232, 0.28);
+      outline-offset: 2px;
+    }
+
+    .app {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+    }
+
+    .game-card {
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid #d7e4f5;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 72px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.97);
+      border-bottom: 1px solid #e6eef8;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .title-icon {
+      display: grid;
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      border-radius: 15px;
+      background: linear-gradient(145deg, #ff7466, #ffac2f);
+      box-shadow: 0 8px 18px rgba(255, 116, 102, 0.24);
+      font-size: 26px;
+      transform: rotate(-5deg);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.16rem, 4.5vw, 1.95rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.83rem;
+      font-weight: 750;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+    }
+
+    .divisor-badge {
+      min-width: 54px;
+      padding: 9px 11px;
+      color: var(--blue-dark);
+      background: #eaf2ff;
+      border: 1px solid #c9dcff;
+      border-radius: 999px;
+      font-weight: 950;
+      text-align: center;
+    }
+
+    .icon-button {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #cbd9ec;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 1.12rem;
+    }
+
+    .icon-button:hover { background: #f1f6fd; }
+    .icon-button:active { transform: scale(0.96); }
+
+    .parent-panel {
+      display: none;
+      padding: 16px;
+      background: #f7faff;
+      border-bottom: 1px solid #dbe7f6;
+    }
+
+    .parent-panel.open { display: block; }
+
+    .parent-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .parent-heading h2 {
+      margin: 0 0 3px;
+      font-size: 1.12rem;
+    }
+
+    .parent-heading p {
+      max-width: 68ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 650;
+      line-height: 1.4;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field label, .fieldset-label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 11px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      font-weight: 800;
+    }
+
+    .toggles {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 46px;
+      padding: 8px 10px;
+      background: #fff;
+      border: 1px solid #d7e4f4;
+      border-radius: 13px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .toggle input {
+      flex: 0 0 auto;
+      width: 21px;
+      height: 21px;
+      margin: 0;
+      accent-color: var(--blue);
+    }
+
+    .settings-actions {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 9px;
+      margin-top: 2px;
+    }
+
+    .settings-actions button {
+      min-height: 48px;
+      padding: 8px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .primary-button {
+      color: #fff;
+      background: linear-gradient(180deg, var(--blue), var(--blue-dark));
+      border: 0;
+      box-shadow: 0 7px 16px rgba(39, 104, 232, 0.22);
+    }
+
+    .secondary-button {
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #bfcfe3;
+    }
+
+    .reset-button {
+      color: #923838;
+      background: #fffafa;
+      border: 2px solid #dfa0a0;
+    }
+
+    .reset-button.confirming {
+      color: #fff;
+      background: #b63232;
+      border-color: #b63232;
+    }
+
+    .settings-status {
+      min-height: 20px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .path-panel {
+      position: relative;
+      min-height: 322px;
+      padding: 12px 12px 6px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #74d8ff 0%, #b9ecff 58%, #f2fcff 100%);
+      border-bottom: 1px solid #c8dff1;
+    }
+
+    .cloud-decoration {
+      position: absolute;
+      width: 84px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.82);
+      border-radius: 999px;
+      opacity: 0.88;
+      pointer-events: none;
+    }
+
+    .cloud-a {
+      top: 26px;
+      left: 7%;
+      box-shadow: 21px -11px 0 5px rgba(255,255,255,0.82), 47px 1px 0 -2px rgba(255,255,255,0.82);
+    }
+
+    .cloud-b {
+      top: 48px;
+      right: 9%;
+      width: 68px;
+      height: 25px;
+      box-shadow: 17px -8px 0 3px rgba(255,255,255,0.82), 37px 0 0 -2px rgba(255,255,255,0.82);
+    }
+
+    .stage {
+      position: relative;
+      width: min(900px, 100%);
+      height: 275px;
+      margin: 0 auto;
+    }
+
+    .path-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .path-shadow, .path-line, .path-dash {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .path-shadow { stroke: rgba(61,103,153,0.18); stroke-width: 13; }
+    .path-line { stroke: #1478e5; stroke-width: 6; }
+    .path-dash { stroke: rgba(255,255,255,0.78); stroke-width: 2; stroke-dasharray: 7 10; }
+
+    .start-icon, .finish-icon, .node {
+      position: absolute;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+    }
+
+    .start-icon, .finish-icon {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      place-items: center;
+      font-size: 43px;
+      filter: drop-shadow(0 5px 3px rgba(85,104,139,0.2));
+    }
+
+    .start-icon { left: 5%; top: 27%; }
+    .finish-icon { left: 94%; top: 72%; transition: transform 0.25s ease; }
+    .finish-icon.complete { transform: translate(-50%, -50%) scale(1.18); }
+
+    .node {
+      display: grid;
+      width: 57px;
+      height: 57px;
+      place-items: center;
+      color: #fff;
+      border: 4px solid rgba(255,255,255,0.94);
+      border-radius: 50%;
+      box-shadow: 0 7px 12px rgba(48,77,119,0.18);
+      font-size: 1.08rem;
+      font-weight: 950;
+    }
+
+    .node.empty {
+      color: #748aa6;
+      background: rgba(255,255,255,0.93) !important;
+    }
+
+    .node.current {
+      outline: 5px solid rgba(255,255,255,0.58);
+      animation: pulse 1.25s ease-in-out infinite;
+    }
+
+    .node.just-filled { animation: pop 0.42s cubic-bezier(.2,.9,.25,1.4); }
+
+    .node small {
+      display: block;
+      margin-top: -1px;
+      font-size: 0.55rem;
+      line-height: 1;
+      opacity: 0.86;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    @keyframes pop {
+      0% { transform: translate(-50%, -50%) scale(0.55); }
+      70% { transform: translate(-50%, -50%) scale(1.18); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .path-caption {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      width: max-content;
+      max-width: 94%;
+      padding: 7px 13px;
+      overflow: hidden;
+      color: #244c6f;
+      background: rgba(255,255,255,0.84);
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 900;
+      text-align: center;
+      text-overflow: ellipsis;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .path-panel.dark .path-caption { color: #fff; background: rgba(13,25,54,0.75); }
+    .path-panel.dark .cloud-decoration { opacity: 0.18; }
+
+    .play-panel {
+      display: grid;
+      grid-template-columns: 1.06fr 0.94fr;
+      gap: 16px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .question-area {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      text-align: center;
+      background: #fbfdff;
+      border: 1px solid #dbe6f3;
+      border-radius: 21px;
+    }
+
+    .progress-line {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 900;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 9px;
+      overflow: hidden;
+      background: #e5eef8;
+      border-radius: 999px;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #ff4d6d, #ff7a00, #ffd166, #8bd900, #00c2a8, #1677ff, #7b2cff);
+      border-radius: inherit;
+      transition: width 0.28s ease;
+    }
+
+    .question-label {
+      margin-top: 3px;
+      color: var(--teal);
+      font-size: 0.75rem;
+      font-weight: 950;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .question {
+      margin: 5px 0 9px;
+      font-size: clamp(2.65rem, 8vw, 4.8rem);
+      font-weight: 950;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .answer-display {
+      display: grid;
+      width: min(240px, 100%);
+      min-height: 62px;
+      place-items: center;
+      color: var(--ink);
+      background: #fff;
+      border: 3px solid #aec9eb;
+      border-radius: 18px;
+      font-size: 1.85rem;
+      font-weight: 950;
+    }
+
+    .answer-display.wrong {
+      background: #fff7f7;
+      border-color: #dc8d8d;
+      animation: shake 0.28s linear;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); }
+      75% { transform: translateX(7px); }
+    }
+
+    .feedback {
+      min-height: 25px;
+      margin-top: 8px;
+      font-weight: 900;
+    }
+
+    .feedback.good { color: var(--green); }
+    .feedback.bad { color: var(--red); }
+
+    .hint-wrap {
+      width: 100%;
+      margin-top: 7px;
+    }
+
+    .hint-button {
+      min-height: 44px;
+      padding: 7px 14px;
+      color: #225f71;
+      background: #eefbfc;
+      border: 1px solid #a9d9de;
+      border-radius: 13px;
+      cursor: pointer;
+      font-size: 0.86rem;
+      font-weight: 900;
+    }
+
+    .hint-model {
+      display: none;
+      width: 100%;
+      max-height: min(46vh, 360px);
+      margin-top: 7px;
+      padding: 10px;
+      overflow: auto;
+      background: #fffdf4;
+      border: 1px solid #eadca8;
+      border-radius: 13px;
+    }
+
+    .hint-model.show { display: block; }
+
+    .hint-summary {
+      margin-bottom: 8px;
+      color: #65531a;
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+
+    .sharing-stage {
+      display: grid;
+      gap: 8px;
+    }
+
+    .source-label {
+      color: #65531a;
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .object-line {
+      display: flex;
+      flex-wrap: wrap;
+      min-height: 52px;
+      max-height: 104px;
+      align-content: center;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 7px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #f6fbff, #e8f3ff);
+      border: 1px dashed #87afd2;
+      border-radius: 11px;
+    }
+
+    .share-object {
+      display: inline-grid;
+      position: relative;
+      z-index: 2;
+      width: var(--share-size, 22px);
+      height: var(--share-size, 22px);
+      place-items: center;
+      flex: 0 0 auto;
+      font-size: var(--share-size, 22px);
+      line-height: 1;
+      transform: translate(0, 0);
+      will-change: transform;
+    }
+
+    .share-boxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .share-box {
+      display: grid;
+      position: relative;
+      grid-template-rows: auto 1fr;
+      min-height: 64px;
+      overflow: visible;
+      background: #fff;
+      border: 2px solid #d4b84d;
+      border-radius: 10px;
+      box-shadow: inset 0 -5px 0 rgba(212,184,77,0.12);
+    }
+
+    .share-box-label {
+      padding: 3px 5px;
+      color: #5e4b0f;
+      background: #fff3bd;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.64rem;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .share-box-items {
+      display: flex;
+      flex-wrap: wrap;
+      min-height: 42px;
+      align-content: center;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      padding: 5px 3px;
+    }
+
+    .sharing-footer {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .replay-sharing-button {
+      min-height: 44px;
+      padding: 7px 12px;
+      color: #225f71;
+      background: #eefbfc;
+      border: 1px solid #a9d9de;
+      border-radius: 11px;
+      cursor: pointer;
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .sharing-status {
+      flex: 1;
+      color: #65531a;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    html[data-layout="phone"] .hint-model {
+      max-height: min(50vh, 340px);
+      padding: 8px;
+    }
+
+    html[data-layout="phone"] .share-boxes {
+      grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+      gap: 5px;
+    }
+
+    html[data-layout="phone"] .sharing-footer {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    html[data-layout="phone"] .sharing-status {
+      min-height: 20px;
+      text-align: left;
+    }
+
+    html[data-reduced-motion="true"] .share-object {
+      transition: none !important;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      align-content: center;
+    }
+
+    .key {
+      min-height: 58px;
+      color: var(--ink);
+      background: linear-gradient(180deg, #fff, #f1f6fc);
+      border: 1px solid #c7d6e8;
+      border-radius: 16px;
+      box-shadow: 0 4px 9px rgba(49,83,127,0.08);
+      cursor: pointer;
+      font-size: 1.28rem;
+      font-weight: 950;
+    }
+
+    .key:active { transform: translateY(2px) scale(0.98); }
+    .key.clear { color: #963a3a; background: #fff8f8; }
+    .key.enter { color: #fff; background: linear-gradient(180deg, #1fae78, #117c54); border-color: #117c54; }
+
+    .complete-card {
+      display: none;
+      grid-column: 1 / -1;
+      padding: 22px 18px;
+      text-align: center;
+      background: linear-gradient(180deg, #fff8df, #fffdf4);
+      border: 1px solid #f1cf79;
+      border-radius: 21px;
+    }
+
+    .complete-card.show { display: block; animation: rise 0.42s ease-out; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .complete-icon { margin-bottom: 6px; font-size: 4rem; line-height: 1; }
+    .complete-card h2 { margin: 0 0 6px; font-size: clamp(1.6rem, 5vw, 2.25rem); }
+    .complete-card p { margin: 0 0 15px; color: var(--muted); font-weight: 750; }
+
+    .completion-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    .completion-actions button {
+      min-height: 48px;
+      padding: 8px 18px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -22px;
+      z-index: 20;
+      width: 11px;
+      height: 17px;
+      border-radius: 3px;
+      pointer-events: none;
+      animation: fall 2.3s linear forwards;
+    }
+
+    @keyframes fall {
+      to { opacity: 0.94; transform: translate3d(var(--drift), 110vh, 0) rotate(720deg); }
+    }
+
+    html[data-large-controls="true"] .key { min-height: 70px; font-size: 1.5rem; }
+    html[data-large-controls="true"] .icon-button { width: 50px; height: 50px; }
+    html[data-large-controls="true"] .settings-actions button { min-height: 54px; }
+
+    html[data-reduced-motion="true"] *,
+    html[data-reduced-motion="true"] *::before,
+    html[data-reduced-motion="true"] *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    .game-card:fullscreen {
+      min-height: 100%;
+      overflow: auto;
+      background: #fff;
+      border: 0;
+      border-radius: 0;
+    }
+
+    body.pseudo-fullscreen { padding: 0; overflow: hidden; }
+
+    body.pseudo-fullscreen .app {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      overflow: auto;
+      background: #eef5ff;
+    }
+
+    body.pseudo-fullscreen .game-card { min-height: 100%; border: 0; border-radius: 0; }
+
+    html[data-layout="phone"] body { padding: 7px; }
+    html[data-layout="phone"] .app { max-width: 480px; }
+    html[data-layout="phone"] .header { min-height: 62px; padding: 9px 10px; }
+    html[data-layout="phone"] .title-icon { width: 39px; height: 39px; font-size: 22px; }
+    html[data-layout="phone"] .subtitle, html[data-layout="phone"] .divisor-badge { display: none; }
+    html[data-layout="phone"] .header-actions { gap: 4px; }
+    html[data-layout="phone"] .icon-button { width: 44px; height: 44px; }
+    html[data-layout="phone"] .parent-panel { padding: 12px; }
+    html[data-layout="phone"] .settings-grid { grid-template-columns: 1fr; }
+    html[data-layout="phone"] .toggles { grid-column: 1; grid-template-columns: 1fr; }
+    html[data-layout="phone"] .settings-actions { grid-column: 1; grid-template-columns: 1fr; }
+    html[data-layout="phone"] .path-panel { min-height: 238px; padding: 6px 4px 3px; }
+    html[data-layout="phone"] .stage { height: 218px; }
+    html[data-layout="phone"] .start-icon, html[data-layout="phone"] .finish-icon { width: 41px; height: 41px; font-size: 31px; }
+    html[data-layout="phone"] .node { width: 38px; height: 38px; border-width: 3px; font-size: 0.78rem; }
+    html[data-layout="phone"] .node small { font-size: 0.43rem; }
+    html[data-layout="phone"] .path-caption { font-size: 0.69rem; }
+    html[data-layout="phone"] .play-panel { grid-template-columns: 1fr; gap: 9px; padding: 9px; }
+    html[data-layout="phone"] .question-area { padding: 11px 9px; }
+    html[data-layout="phone"] .question { margin: 3px 0 7px; font-size: 2.7rem; }
+    html[data-layout="phone"] .answer-display { min-height: 54px; }
+    html[data-layout="phone"] .keypad { gap: 7px; }
+    html[data-layout="phone"] .key { min-height: 51px; }
+    html[data-layout="phone"][data-large-controls="true"] .key { min-height: 70px; }
+    html[data-layout="phone"][data-large-controls="true"] .icon-button { width: 50px; height: 50px; }
+
+    html[data-layout="tablet"] body { padding: 11px; }
+    html[data-layout="tablet"] .app { max-width: 900px; }
+    html[data-layout="tablet"] .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    html[data-layout="tablet"] .toggles { grid-column: 1 / -1; }
+    html[data-layout="tablet"] .settings-actions { grid-column: 1 / -1; }
+    html[data-layout="tablet"] .play-panel { grid-template-columns: 1fr; }
+    html[data-layout="tablet"] .stage { height: 275px; }
+
+    html[data-layout="computer"] body { padding: 0; background: #f3f7fd; }
+    html[data-layout="computer"] .app { width: 100%; max-width: none; }
+    html[data-layout="computer"] .game-card { min-height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
+    html[data-layout="computer"] .header, html[data-layout="computer"] .parent-panel { padding-left: clamp(28px, 5vw, 76px); padding-right: clamp(28px, 5vw, 76px); }
+    html[data-layout="computer"] .path-panel { min-height: 395px; padding-left: clamp(20px, 4vw, 62px); padding-right: clamp(20px, 4vw, 62px); }
+    html[data-layout="computer"] .stage { width: min(1280px, 96%); height: 340px; }
+    html[data-layout="computer"] .node { width: 70px; height: 70px; font-size: 1.34rem; }
+    html[data-layout="computer"] .node small { font-size: 0.66rem; }
+    html[data-layout="computer"] .play-panel { width: min(1280px, 96%); margin: 0 auto; padding: 20px 0 28px; }
+
+    @media (orientation: landscape) {
+      html[data-layout="tablet"] .app { max-width: 1080px; }
+      html[data-layout="tablet"] .play-panel { grid-template-columns: 1.06fr 0.94fr; }
+      html[data-layout="tablet"] .path-panel { min-height: 292px; }
+      html[data-layout="tablet"] .stage { height: 258px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="game-card" id="gameCard" aria-label="Rainbow Road Division game">
+      <header class="header">
+        <div class="brand">
+          <div class="title-icon" id="titleIcon" aria-hidden="true">🌈</div>
+          <div>
+            <h1>Rainbow Road Division</h1>
+            <div class="subtitle" id="themeSubtitle">Build the colorful number path.</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="divisor-badge" id="divisorBadge" aria-label="Current divisor">÷ 2</div>
+          <button class="icon-button" id="fullscreenButton" type="button" aria-label="Enter fullscreen" title="Fullscreen">⛶</button>
+          <button class="icon-button" id="settingsButton" type="button" aria-label="Open parent setup" aria-expanded="false" title="Parent setup">⚙️</button>
+        </div>
+      </header>
+
+      <section class="parent-panel" id="parentPanel" aria-labelledby="parentSetupHeading">
+        <div class="parent-heading">
+          <div>
+            <h2 id="parentSetupHeading">Parent setup</h2>
+            <p>Choose only what fits this practice session. Settings and progress stay in this browser on this device.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="field">
+            <label for="nicknameInput">Optional nickname</label>
+            <input id="nicknameInput" type="text" value="Player" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false">
+          </div>
+
+          <div class="field">
+            <label for="divisorSelect">Starting divisor</label>
+            <select id="divisorSelect"></select>
+          </div>
+
+          <div class="field">
+            <label for="quotientLimitSelect">Quotients included</label>
+            <select id="quotientLimitSelect">
+              <option value="2">1 through 2</option>
+              <option value="5">1 through 5</option>
+              <option value="10">1 through 10</option>
+              <option value="12" selected>1 through 12</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="questionCountSelect">Path length</label>
+            <select id="questionCountSelect">
+              <option value="10">10 questions</option>
+              <option value="12" selected>12 questions</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="orderSelect">Question order</label>
+            <select id="orderSelect">
+              <option value="fixed" selected>In order</option>
+              <option value="random">Mixed order</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="hintModeSelect">Sharing animation</label>
+            <select id="hintModeSelect">
+              <option value="optional" selected>Optional button</option>
+              <option value="always">Start automatically</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="displayModeSelect">Layout</label>
+            <select id="displayModeSelect">
+              <option value="auto" selected>Auto</option>
+              <option value="phone">Phone</option>
+              <option value="tablet">Tablet</option>
+              <option value="computer">Computer</option>
+            </select>
+          </div>
+
+          <div class="toggles">
+            <label class="toggle"><input type="checkbox" id="repeatMissedInput" checked> Mix a missed question back in later</label>
+            <label class="toggle"><input type="checkbox" id="largeControlsInput"> Larger controls</label>
+            <label class="toggle"><input type="checkbox" id="reducedMotionInput"> Reduced animation</label>
+          </div>
+
+          <div class="settings-actions">
+            <button class="primary-button" id="applySettingsButton" type="button">Start with These Settings</button>
+            <button class="secondary-button" id="restartPathButton" type="button">Restart This Path</button>
+            <button class="reset-button" id="resetDefaultsButton" type="button">Reset to Defaults</button>
+          </div>
+        </div>
+
+        <p class="settings-status" id="settingsStatus" role="status">No account is needed. Personalization is never sent anywhere.</p>
+      </section>
+
+      <section class="path-panel" id="pathPanel" aria-label="Rainbow Road progress">
+        <div class="cloud-decoration cloud-a"></div>
+        <div class="cloud-decoration cloud-b"></div>
+        <div class="stage" id="stage">
+          <svg class="path-svg" viewBox="0 0 1000 320" preserveAspectRatio="none" aria-hidden="true">
+            <path class="path-shadow" id="pathShadow" d="M55 85 C180 48 620 44 790 78 C885 97 919 163 864 218 C775 306 278 276 110 234 C54 220 31 185 61 159 C145 89 690 121 945 228"></path>
+            <path class="path-line" id="pathLine" d="M55 85 C180 48 620 44 790 78 C885 97 919 163 864 218 C775 306 278 276 110 234 C54 220 31 185 61 159 C145 89 690 121 945 228"></path>
+            <path class="path-dash" id="pathDash" d="M55 85 C180 48 620 44 790 78 C885 97 919 163 864 218 C775 306 278 276 110 234 C54 220 31 185 61 159 C145 89 690 121 945 228"></path>
+          </svg>
+          <div class="start-icon" id="startIcon" aria-label="Start">🌟</div>
+          <div class="finish-icon" id="finishIcon" aria-label="Finish">☁️</div>
+          <div id="nodesContainer"></div>
+          <div class="path-caption" id="pathCaption">Answer correctly to fill the next circle.</div>
+        </div>
+      </section>
+
+      <section class="play-panel" id="playPanel">
+        <div class="question-area" id="questionArea">
+          <div class="progress-line">
+            <span id="progressText">0 of 12</span>
+            <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+          <div class="question-label">Solve</div>
+          <div class="question" id="questionText">2 ÷ 2 = ?</div>
+          <div class="answer-display" id="answerDisplay" aria-live="polite">_</div>
+          <div class="feedback" id="feedback" aria-live="polite"></div>
+          <div class="hint-wrap" id="hintWrap">
+            <button class="hint-button" id="hintButton" type="button" aria-expanded="false">Show sharing animation</button>
+            <div class="hint-model" id="hintModel">
+              <div class="hint-summary" id="hintSummary"></div>
+              <div class="sharing-stage" id="sharingStage">
+                <div class="source-label">Waiting line</div>
+                <div class="object-line" id="objectLine" aria-hidden="true"></div>
+                <div class="share-boxes" id="shareBoxes" aria-hidden="true"></div>
+                <div class="sharing-footer">
+                  <button class="replay-sharing-button" id="replaySharingButton" type="button">Replay sharing</button>
+                  <span class="sharing-status" id="sharingStatus" role="status" aria-live="polite"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="keypad" id="keypad" aria-label="Number keypad">
+          <button class="key" type="button" data-key="1">1</button>
+          <button class="key" type="button" data-key="2">2</button>
+          <button class="key" type="button" data-key="3">3</button>
+          <button class="key" type="button" data-key="4">4</button>
+          <button class="key" type="button" data-key="5">5</button>
+          <button class="key" type="button" data-key="6">6</button>
+          <button class="key" type="button" data-key="7">7</button>
+          <button class="key" type="button" data-key="8">8</button>
+          <button class="key" type="button" data-key="9">9</button>
+          <button class="key clear" type="button" data-action="clear">Clear</button>
+          <button class="key" type="button" data-key="0">0</button>
+          <button class="key enter" type="button" data-action="check" aria-label="Check answer">✓</button>
+        </div>
+
+        <div class="complete-card" id="completeCard" aria-live="polite">
+          <div class="complete-icon" id="completeIcon" aria-hidden="true">🌈</div>
+          <h2 id="completeHeading">Rainbow Road complete!</h2>
+          <p id="completeText">You completed this path.</p>
+          <div class="completion-actions">
+            <button class="secondary-button" id="replayButton" type="button">Replay This Path</button>
+            <button class="primary-button" id="nextDivisorButton" type="button">Next Divisor</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "neuronsAtPlay.rainbowRoadDivision.public.v1";
+
+    const DEFAULTS = Object.freeze({
+      nickname: "Player",
+      divisor: 2,
+      quotientLimit: 12,
+      questionCount: 12,
+      order: "fixed",
+      hintMode: "optional",
+      repeatMissed: true,
+      displayMode: "auto",
+      largeControls: false,
+      reducedMotion: false
+    });
+
+    const themes = {
+      2: { name: "Penguin Ice Crossing", icon: "🐧", subtitle: "Share icy treasures equally while practising division by 2.", background: "linear-gradient(180deg,#70d6f5 0%,#c7f3ff 55%,#f5fdff 100%)", line: "#146c94", shadow: "rgba(16,73,104,.28)", start: "🐧", finish: "🧊", reward: "❄️", dark: false, colors: ["#087ca7","#168daf","#2f75ba","#5365c5","#7952bd","#a24ea8","#c53f83","#d7525e","#c87500","#9b8500","#328350","#008377"] },
+      3: { name: "Dinosaur Dig", icon: "🦕", subtitle: "Uncover fossils while practising division by 3.", background: "linear-gradient(180deg,#f5c768 0%,#f7dfa4 53%,#fff5d8 100%)", line: "#8d5a22", shadow: "rgba(104,65,21,.3)", start: "🥚", finish: "🦴", reward: "🦖", dark: false, colors: ["#9c4e20","#b25e21","#bd7200","#9a7d00","#5f7d20","#26744e","#167378","#176c8c","#3563a6","#66509d","#93498b","#af4e5e"] },
+      4: { name: "Robot Workshop", icon: "🤖", subtitle: "Build clever machines while practising division by 4.", background: "linear-gradient(180deg,#9aa9bc 0%,#ced7e3 54%,#f4f7fa 100%)", line: "#354d68", shadow: "rgba(30,48,68,.32)", start: "🔩", finish: "⚙️", reward: "🤖", dark: false, colors: ["#344c69","#27668d","#087b91","#00816f","#4e7e3c","#8c7a00","#b56900","#bf4d2c","#b43e5e","#8b438e","#6250a7","#3c63a0"] },
+      5: { name: "Mermaid Lagoon", icon: "🧜‍♀️", subtitle: "Share lagoon treasures while practising division by 5.", background: "linear-gradient(180deg,#4bd6c8 0%,#8de9df 50%,#dffcf7 100%)", line: "#087c75", shadow: "rgba(0,91,82,.28)", start: "🐠", finish: "🐚", reward: "🧜‍♀️", dark: false, colors: ["#007f78","#008c87","#14899e","#287ca7","#536cba","#7856ae","#a44b97","#c44276","#cf5252","#c47500","#8d8600","#3e853b"] },
+      6: { name: "Dragon Flight", icon: "🐉", subtitle: "Soar past mountain peaks while practising division by 6.", background: "linear-gradient(180deg,#7354b8 0%,#a889d6 48%,#e5d9f5 100%)", line: "#f2c14e", shadow: "rgba(31,19,62,.4)", start: "🥚", finish: "🏰", reward: "🔥", dark: true, colors: ["#ffcf4a","#eaa800","#db7500","#d84a30","#d43f6c","#bd48a7","#9357c6","#6870cf","#3181bb","#008e9c","#069072","#669233"] },
+      7: { name: "Enchanted Library", icon: "📚", subtitle: "Unlock magical books while practising division by 7.", background: "linear-gradient(180deg,#5a377a 0%,#79539b 50%,#d4bee6 100%)", line: "#f5d36d", shadow: "rgba(28,10,43,.42)", start: "🔑", finish: "📖", reward: "✨", dark: true, colors: ["#f4cf59","#dca800","#c67e00","#c55739","#c34272","#a54ba4","#7e59bb","#546fc2","#3182ad","#008d92","#198d6b","#6d8d34"] },
+      8: { name: "Desert Treasure", icon: "🐪", subtitle: "Cross warm dunes while practising division by 8.", background: "linear-gradient(180deg,#f2ae55 0%,#f6cf87 51%,#fff0c9 100%)", line: "#98601e", shadow: "rgba(112,67,16,.3)", start: "🐪", finish: "🏺", reward: "💰", dark: false, colors: ["#9a4f1e","#b35c22","#c16b00","#a67e00","#6e7f22","#3d7b3d","#167668","#087385","#286b9b","#5360a4","#7e4e91","#a94d6e"] },
+      9: { name: "Safari Sunset", icon: "🦁", subtitle: "Travel across the savanna while practising division by 9.", background: "linear-gradient(180deg,#ef8b66 0%,#f4b276 48%,#ffe0a3 100%)", line: "#7d4b24", shadow: "rgba(86,45,18,.32)", start: "🚙", finish: "🌅", reward: "🦁", dark: false, colors: ["#963e32","#aa4a2b","#bb5c17","#a66f00","#7d7800","#4b7a28","#20754e","#08716c","#1f6b83","#416397","#6f518f","#974b76"] },
+      10: { name: "Construction Crew", icon: "🏗️", subtitle: "Build a busy city while practising division by 10.", background: "linear-gradient(180deg,#75bde7 0%,#b4dcf2 50%,#f2ecd3 100%)", line: "#3f5667", shadow: "rgba(45,62,73,.3)", start: "🚧", finish: "🏙️", reward: "🏗️", dark: false, colors: ["#313f4b","#3d596c","#28728b","#00827b","#357d58","#727c25","#a47100","#bd5e00","#bd4439","#a84469","#784e91","#4f5f9d"] },
+      11: { name: "Music Festival", icon: "🎸", subtitle: "Fill the stage with music while practising division by 11.", background: "linear-gradient(180deg,#ed65aa 0%,#f29dcc 49%,#ffe2f1 100%)", line: "#812b62", shadow: "rgba(100,25,72,.3)", start: "🎵", finish: "🎤", reward: "🎶", dark: false, colors: ["#a61c60","#b92a7d","#9e3c9b","#744ea9","#4e61ad","#2774a6","#00838f","#00866b","#52853a","#8e7e00","#bd6200","#c84443"] },
+      12: { name: "Winter Carnival", icon: "🎡", subtitle: "Visit a snowy carnival while practising division by 12.", background: "linear-gradient(180deg,#8e9ff0 0%,#c2ccf8 50%,#f0f3ff 100%)", line: "#3e55a2", shadow: "rgba(40,54,121,.3)", start: "⛸️", finish: "🎡", reward: "❄️", dark: false, colors: ["#3850a5","#4d55b1","#6852ae","#8750a4","#a74891","#c34172","#cb4e52","#c56800","#a77c00","#68852c","#278061","#087b83"] }
+    };
+
+    const sharingObjects = [
+      { emoji: "🍪", singular: "cookie", plural: "cookies" },
+      { emoji: "⚽", singular: "ball", plural: "balls" },
+      { emoji: "🖍️", singular: "crayon", plural: "crayons" },
+      { emoji: "🚗", singular: "car", plural: "cars" }
+    ];
+
+    const topPositions = [
+      { left: 14, top: 25 }, { left: 28, top: 22 }, { left: 42, top: 23 },
+      { left: 56, top: 21 }, { left: 70, top: 24 }, { left: 81, top: 34 }
+    ];
+
+    const bottomPositions = [
+      { left: 17, top: 70 }, { left: 32, top: 72 }, { left: 47, top: 70 },
+      { left: 62, top: 72 }, { left: 76, top: 69 }, { left: 86, top: 62 }
+    ];
+
+    const el = Object.fromEntries([
+      "gameCard", "fullscreenButton", "settingsButton", "parentPanel", "nicknameInput",
+      "divisorSelect", "quotientLimitSelect", "questionCountSelect", "orderSelect", "hintModeSelect",
+      "repeatMissedInput", "displayModeSelect", "largeControlsInput", "reducedMotionInput",
+      "applySettingsButton", "restartPathButton", "resetDefaultsButton", "settingsStatus",
+      "titleIcon", "themeSubtitle", "divisorBadge", "pathPanel", "pathLine", "pathShadow",
+      "pathDash", "startIcon", "finishIcon", "nodesContainer", "pathCaption", "questionArea",
+      "questionText", "answerDisplay", "feedback", "hintWrap", "hintButton", "hintModel",
+      "hintSummary", "sharingStage", "objectLine", "shareBoxes", "replaySharingButton",
+      "sharingStatus", "keypad", "progressText", "progressFill", "completeCard",
+      "completeIcon", "completeHeading", "completeText", "replayButton", "nextDivisorButton"
+    ].map(id => [id, document.getElementById(id)]));
+
+    let settings = { ...DEFAULTS };
+    const state = {
+      divisor: DEFAULTS.divisor,
+      questions: [],
+      index: 0,
+      input: "",
+      completed: false,
+      lastFilled: -1,
+      hintOpen: false,
+      sharingRun: 0,
+      sharingTimers: [],
+      resetTimer: null,
+      resizeFrame: null
+    };
+
+    function safeStorageGet() {
+      try { return window.localStorage.getItem(STORAGE_KEY); } catch (error) { return null; }
+    }
+
+    function safeStorageSet(value) {
+      try { window.localStorage.setItem(STORAGE_KEY, value); } catch (error) { /* Local files may block storage. */ }
+    }
+
+    function safeStorageRemove() {
+      try { window.localStorage.removeItem(STORAGE_KEY); } catch (error) { /* The page can still reset in memory. */ }
+    }
+
+    function normalizeNickname(value) {
+      const compact = String(value || "").replace(/\s+/g, " ").trim().slice(0, 24);
+      return compact || DEFAULTS.nickname;
+    }
+
+    function validChoice(value, choices, fallback) {
+      return choices.includes(value) ? value : fallback;
+    }
+
+    function sanitizeSettings(candidate = {}) {
+      const divisor = Number(candidate.divisor);
+      const quotientLimit = Number(candidate.quotientLimit);
+      const questionCount = Number(candidate.questionCount);
+      return {
+        nickname: normalizeNickname(candidate.nickname),
+        divisor: Number.isInteger(divisor) && divisor >= 2 && divisor <= 12 ? divisor : DEFAULTS.divisor,
+        quotientLimit: [2, 5, 10, 12].includes(quotientLimit) ? quotientLimit : DEFAULTS.quotientLimit,
+        questionCount: [10, 12].includes(questionCount) ? questionCount : DEFAULTS.questionCount,
+        order: validChoice(candidate.order, ["fixed", "random"], DEFAULTS.order),
+        hintMode: validChoice(candidate.hintMode, ["optional", "always", "hidden"], DEFAULTS.hintMode),
+        repeatMissed: candidate.repeatMissed !== false,
+        displayMode: validChoice(candidate.displayMode, ["auto", "phone", "tablet", "computer"], DEFAULTS.displayMode),
+        largeControls: Boolean(candidate.largeControls),
+        reducedMotion: Boolean(candidate.reducedMotion)
+      };
+    }
+
+    function shuffled(values) {
+      const copy = [...values];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function makeQuestion(divisor, quotient) {
+      return { divisor, quotient, dividend: divisor * quotient, answer: quotient };
+    }
+
+    function buildQuestions(savedQuotients = null) {
+      let quotients = [];
+      if (
+        Array.isArray(savedQuotients) &&
+        savedQuotients.length === settings.questionCount &&
+        savedQuotients.every(value => Number.isInteger(value) && value >= 1 && value <= settings.quotientLimit)
+      ) {
+        quotients = [...savedQuotients];
+      } else {
+        const base = Array.from({ length: settings.quotientLimit }, (_, index) => index + 1);
+        while (quotients.length < settings.questionCount) {
+          const pass = settings.order === "random" ? shuffled(base) : base;
+          quotients.push(...pass);
+        }
+        quotients = quotients.slice(0, settings.questionCount);
+        if (settings.order === "random") quotients = shuffled(quotients);
+      }
+
+      state.questions = quotients.map(quotient => makeQuestion(state.divisor, quotient));
+      if (!validateQuestions(state.questions)) throw new Error("Invalid division question set.");
+    }
+
+    function validateQuestions(questions) {
+      return questions.length === settings.questionCount && questions.every(question =>
+        Number.isInteger(question.divisor) &&
+        Number.isInteger(question.quotient) &&
+        Number.isInteger(question.dividend) &&
+        Number.isInteger(question.answer) &&
+        question.divisor >= 2 && question.divisor <= 12 &&
+        question.quotient >= 1 && question.quotient <= settings.quotientLimit &&
+        question.dividend === question.divisor * question.quotient &&
+        question.answer === question.quotient
+      );
+    }
+
+    function readControls() {
+      return sanitizeSettings({
+        nickname: el.nicknameInput.value,
+        divisor: el.divisorSelect.value,
+        quotientLimit: el.quotientLimitSelect.value,
+        questionCount: el.questionCountSelect.value,
+        order: el.orderSelect.value,
+        hintMode: el.hintModeSelect.value,
+        repeatMissed: el.repeatMissedInput.checked,
+        displayMode: el.displayModeSelect.value,
+        largeControls: el.largeControlsInput.checked,
+        reducedMotion: el.reducedMotionInput.checked
+      });
+    }
+
+    function writeControls() {
+      el.nicknameInput.value = settings.nickname;
+      el.divisorSelect.value = String(settings.divisor);
+      el.quotientLimitSelect.value = String(settings.quotientLimit);
+      el.questionCountSelect.value = String(settings.questionCount);
+      el.orderSelect.value = settings.order;
+      el.hintModeSelect.value = settings.hintMode;
+      el.repeatMissedInput.checked = settings.repeatMissed;
+      el.displayModeSelect.value = settings.displayMode;
+      el.largeControlsInput.checked = settings.largeControls;
+      el.reducedMotionInput.checked = settings.reducedMotion;
+    }
+
+    function saveState() {
+      safeStorageSet(JSON.stringify({
+        version: 1,
+        settings,
+        progress: {
+          divisor: state.divisor,
+          quotients: state.questions.map(question => question.quotient),
+          index: state.index,
+          completed: state.completed,
+          lastFilled: state.lastFilled
+        }
+      }));
+    }
+
+    function restoreState() {
+      const raw = safeStorageGet();
+      if (!raw) return false;
+      try {
+        const saved = JSON.parse(raw);
+        if (!saved || saved.version !== 1) return false;
+        settings = sanitizeSettings(saved.settings);
+        const progress = saved.progress || {};
+        const divisor = Number(progress.divisor);
+        state.divisor = Number.isInteger(divisor) && divisor >= 2 && divisor <= 12 ? divisor : settings.divisor;
+        buildQuestions(progress.quotients);
+        const index = Number(progress.index);
+        state.index = Number.isInteger(index) && index >= 0 && index <= state.questions.length ? index : 0;
+        state.completed = Boolean(progress.completed) && state.index === state.questions.length;
+        state.lastFilled = Number.isInteger(progress.lastFilled) ? progress.lastFilled : state.index - 1;
+        state.input = "";
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function automaticLayout() {
+      const width = Math.max(0, window.innerWidth || document.documentElement.clientWidth || 0);
+      const height = Math.max(0, window.innerHeight || document.documentElement.clientHeight || 0);
+      if (width <= 600 || (height <= 500 && width <= 950)) return "phone";
+      if (width <= 1100) return "tablet";
+      return "computer";
+    }
+
+    function applyPreferences(shouldSave = false) {
+      const effective = settings.displayMode === "auto" ? automaticLayout() : settings.displayMode;
+      document.documentElement.dataset.layout = effective;
+      document.documentElement.dataset.layoutPreference = settings.displayMode;
+      document.documentElement.dataset.largeControls = String(settings.largeControls);
+      document.documentElement.dataset.reducedMotion = String(settings.reducedMotion);
+      if (shouldSave) saveState();
+    }
+
+    function getNodePositions() {
+      if (settings.questionCount === 10) {
+        return [...topPositions.slice(0, 5), ...bottomPositions.slice(0, 5).reverse()];
+      }
+      return [...topPositions, ...bottomPositions.slice().reverse()];
+    }
+
+    function applyTheme() {
+      const theme = themes[state.divisor];
+      el.titleIcon.textContent = theme.icon;
+      el.themeSubtitle.textContent = `${settings.nickname}: ${theme.subtitle}`;
+      el.divisorBadge.textContent = `÷ ${state.divisor}`;
+      el.pathPanel.style.background = theme.background;
+      el.pathPanel.classList.toggle("dark", theme.dark);
+      el.pathLine.style.stroke = theme.line;
+      el.pathShadow.style.stroke = theme.shadow;
+      el.pathDash.style.stroke = theme.dark ? "rgba(255,255,255,.72)" : "rgba(255,255,255,.82)";
+      el.startIcon.textContent = theme.start;
+      el.finishIcon.textContent = state.completed ? theme.reward : theme.finish;
+      el.progressFill.style.background = `linear-gradient(90deg,${theme.colors.join(",")})`;
+    }
+
+    function renderNodes() {
+      el.nodesContainer.textContent = "";
+      const positions = getNodePositions();
+      const theme = themes[state.divisor];
+      positions.forEach((position, index) => {
+        const node = document.createElement("div");
+        const solved = index < state.index;
+        const current = index === state.index && !state.completed;
+        node.className = `node${solved ? "" : " empty"}${current ? " current" : ""}${index === state.lastFilled ? " just-filled" : ""}`;
+        node.style.left = `${position.left}%`;
+        node.style.top = `${position.top}%`;
+        node.style.background = theme.colors[index % theme.colors.length];
+        if (solved) {
+          const question = state.questions[index];
+          const span = document.createElement("span");
+          span.append(document.createTextNode(String(question.answer)));
+          const small = document.createElement("small");
+          small.textContent = `${question.dividend}÷${question.divisor}`;
+          span.appendChild(small);
+          node.appendChild(span);
+          node.setAttribute("aria-label", `${question.dividend} divided by ${question.divisor} equals ${question.answer}`);
+        } else {
+          node.textContent = "?";
+          node.setAttribute("aria-label", current ? "Current question" : "Upcoming question");
+        }
+        el.nodesContainer.appendChild(node);
+      });
+    }
+
+    function cancelSharingAnimation() {
+      state.sharingRun += 1;
+      state.sharingTimers.forEach(timer => window.clearTimeout(timer));
+      state.sharingTimers = [];
+    }
+
+    function scheduleSharingStep(callback, delay) {
+      const timer = window.setTimeout(() => {
+        state.sharingTimers = state.sharingTimers.filter(value => value !== timer);
+        callback();
+      }, delay);
+      state.sharingTimers.push(timer);
+    }
+
+    function sharingMotionIsReduced() {
+      return settings.reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    function sharingObjectSize(total) {
+      if (total > 96) return 10;
+      if (total > 48) return 12;
+      if (total > 24) return 15;
+      if (total > 12) return 18;
+      return 24;
+    }
+
+    function prepareSharingAnimation(question) {
+      cancelSharingAnimation();
+      const run = state.sharingRun;
+      const object = sharingObjects[state.index % sharingObjects.length];
+      const objectWord = question.dividend === 1 ? object.singular : object.plural;
+      const objectSize = sharingObjectSize(question.dividend);
+
+      el.hintSummary.textContent = `Watch ${question.dividend} ${objectWord} go one at a time into ${question.divisor} boxes.`;
+      el.sharingStage.style.setProperty("--share-size", `${objectSize}px`);
+      el.objectLine.textContent = "";
+      el.shareBoxes.textContent = "";
+      el.sharingStatus.textContent = "";
+
+      for (let index = 0; index < question.dividend; index += 1) {
+        const item = document.createElement("span");
+        item.className = "share-object";
+        item.textContent = object.emoji;
+        item.setAttribute("aria-hidden", "true");
+        el.objectLine.appendChild(item);
+      }
+
+      for (let groupIndex = 0; groupIndex < question.divisor; groupIndex += 1) {
+        const box = document.createElement("div");
+        box.className = "share-box";
+
+        const label = document.createElement("div");
+        label.className = "share-box-label";
+        label.textContent = `Box ${groupIndex + 1}`;
+
+        const items = document.createElement("div");
+        items.className = "share-box-items";
+
+        box.append(label, items);
+        el.shareBoxes.appendChild(box);
+      }
+
+      const targetItems = [...el.shareBoxes.querySelectorAll(".share-box-items")];
+      if (sharingMotionIsReduced()) {
+        [...el.objectLine.children].forEach((item, index) => {
+          targetItems[index % question.divisor].appendChild(item);
+        });
+        el.replaySharingButton.textContent = "Show grouping again";
+        el.sharingStatus.textContent = "Sharing complete. Count the objects in one box.";
+        return;
+      }
+
+      el.replaySharingButton.textContent = "Replay sharing";
+      el.sharingStatus.textContent = "Sharing one at a time…";
+      const stepDelay = Math.max(45, Math.min(260, Math.floor(5200 / question.dividend)));
+      const moveDuration = Math.max(180, Math.min(340, stepDelay + 80));
+
+      function moveNext(index) {
+        if (run !== state.sharingRun) return;
+        const item = el.objectLine.firstElementChild;
+        if (!item) return;
+
+        const start = item.getBoundingClientRect();
+        targetItems[index % question.divisor].appendChild(item);
+        const end = item.getBoundingClientRect();
+        item.style.transition = "none";
+        item.style.transform = `translate(${start.left - end.left}px, ${start.top - end.top}px) scale(1.08)`;
+        void item.offsetWidth;
+
+        window.requestAnimationFrame(() => {
+          if (run !== state.sharingRun) return;
+          item.style.transition = `transform ${moveDuration}ms cubic-bezier(.2,.75,.25,1)`;
+          item.style.transform = "translate(0, 0) scale(1)";
+        });
+
+        if (index + 1 < question.dividend) {
+          scheduleSharingStep(() => moveNext(index + 1), stepDelay);
+        } else {
+          scheduleSharingStep(() => {
+            if (run === state.sharingRun) {
+              el.sharingStatus.textContent = "Sharing complete. Count the objects in one box.";
+            }
+          }, moveDuration + 40);
+        }
+      }
+
+      scheduleSharingStep(() => moveNext(0), 300);
+    }
+
+    function renderHint() {
+      if (state.completed) return;
+      const question = state.questions[state.index];
+      const always = settings.hintMode === "always";
+      const hidden = settings.hintMode === "hidden";
+      el.hintWrap.hidden = hidden;
+      el.hintButton.hidden = always;
+      state.hintOpen = always ? true : state.hintOpen;
+      const showing = !hidden && state.hintOpen;
+      el.hintModel.classList.toggle("show", showing);
+      el.hintButton.setAttribute("aria-expanded", String(state.hintOpen));
+      el.hintButton.textContent = state.hintOpen ? "Hide sharing animation" : "Show sharing animation";
+
+      if (showing) {
+        prepareSharingAnimation(question);
+      } else {
+        cancelSharingAnimation();
+        el.hintSummary.textContent = "";
+        el.objectLine.textContent = "";
+        el.shareBoxes.textContent = "";
+        el.sharingStatus.textContent = "";
+      }
+    }
+
+    function renderQuestion() {
+      if (state.completed) return;
+      const question = state.questions[state.index];
+      el.questionText.textContent = `${question.dividend} ÷ ${question.divisor} = ?`;
+      el.answerDisplay.textContent = state.input || "_";
+      el.divisorBadge.textContent = `÷ ${state.divisor}`;
+      renderHint();
+    }
+
+    function renderProgress() {
+      el.progressText.textContent = `${state.index} of ${settings.questionCount}`;
+      el.progressFill.style.width = `${(state.index / settings.questionCount) * 100}%`;
+      el.pathCaption.textContent = state.completed
+        ? `${settings.nickname} completed all ${settings.questionCount} stops!`
+        : `${themes[state.divisor].name}: fill circle ${state.index + 1} of ${settings.questionCount}.`;
+    }
+
+    function render() {
+      applyTheme();
+      renderNodes();
+      renderProgress();
+      if (!state.completed) renderQuestion();
+      else cancelSharingAnimation();
+      el.questionArea.hidden = state.completed;
+      el.keypad.hidden = state.completed;
+      el.completeCard.classList.toggle("show", state.completed);
+      el.finishIcon.classList.toggle("complete", state.completed);
+    }
+
+    function beginPath(divisor = settings.divisor, savedQuotients = null) {
+      state.divisor = divisor;
+      settings.divisor = divisor;
+      state.index = 0;
+      state.input = "";
+      state.completed = false;
+      state.lastFilled = -1;
+      state.hintOpen = settings.hintMode === "always";
+      el.feedback.textContent = "";
+      el.feedback.className = "feedback";
+      el.answerDisplay.classList.remove("wrong");
+      buildQuestions(savedQuotients);
+      writeControls();
+      applyPreferences(false);
+      render();
+      saveState();
+    }
+
+    function appendDigit(digit) {
+      if (state.completed || state.input.length >= 3) return;
+      state.input += digit;
+      el.answerDisplay.textContent = state.input;
+      el.answerDisplay.classList.remove("wrong");
+      el.feedback.textContent = "";
+      el.feedback.className = "feedback";
+    }
+
+    function clearInput() {
+      if (state.completed) return;
+      state.input = "";
+      el.answerDisplay.textContent = "_";
+      el.answerDisplay.classList.remove("wrong");
+      el.feedback.textContent = "";
+      el.feedback.className = "feedback";
+    }
+
+    function mixMissedQuestionBackIn(quotient) {
+      if (!settings.repeatMissed || state.index >= state.questions.length - 1) return;
+      const target = Math.min(state.questions.length - 1, state.index + 2);
+      if (target > state.index) state.questions[target] = makeQuestion(state.divisor, quotient);
+    }
+
+    function markWrong(hadInput) {
+      const current = state.questions[state.index];
+      if (hadInput) mixMissedQuestionBackIn(current.quotient);
+      el.feedback.textContent = hadInput ? "Not yet. Try again." : "Enter an answer, then check it.";
+      el.feedback.className = "feedback bad";
+      el.answerDisplay.classList.remove("wrong");
+      void el.answerDisplay.offsetWidth;
+      el.answerDisplay.classList.add("wrong");
+      saveState();
+    }
+
+    function checkAnswer() {
+      if (state.completed) return;
+      const question = state.questions[state.index];
+      const submitted = state.input;
+      state.input = "";
+      el.answerDisplay.textContent = "_";
+      el.answerDisplay.classList.remove("wrong");
+
+      if (submitted === "" || Number(submitted) !== question.answer) {
+        markWrong(submitted !== "");
+        return;
+      }
+
+      state.lastFilled = state.index;
+      state.index += 1;
+      el.feedback.textContent = `Correct! Nice work, ${settings.nickname}.`;
+      el.feedback.className = "feedback good";
+      state.hintOpen = settings.hintMode === "always";
+
+      if (state.index >= state.questions.length) {
+        state.completed = true;
+        render();
+        showCompletion();
+      } else {
+        render();
+      }
+      saveState();
+    }
+
+    function showCompletion(launch = true) {
+      const theme = themes[state.divisor];
+      el.completeIcon.textContent = theme.reward;
+      el.completeHeading.textContent = `${theme.name} complete!`;
+      el.completeText.textContent = `${settings.nickname} completed the division-by-${state.divisor} path. Take as long as you like to enjoy it.`;
+      if (launch && !settings.reducedMotion && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        launchConfetti(theme.colors);
+      }
+    }
+
+    function launchConfetti(colors) {
+      for (let index = 0; index < 42; index += 1) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = colors[index % colors.length];
+        piece.style.animationDelay = `${Math.random() * 0.4}s`;
+        piece.style.animationDuration = `${1.8 + Math.random() * 0.9}s`;
+        piece.style.setProperty("--drift", `${-80 + Math.random() * 160}px`);
+        document.body.appendChild(piece);
+        window.setTimeout(() => piece.remove(), 3100);
+      }
+    }
+
+    function applySettings() {
+      settings = readControls();
+      el.settingsStatus.textContent = "Settings saved only in this browser. A new path is ready.";
+      beginPath(settings.divisor);
+      closeParentPanel();
+    }
+
+    function restartPath() {
+      el.settingsStatus.textContent = "This path has restarted with the current saved settings.";
+      beginPath(state.divisor);
+      closeParentPanel();
+    }
+
+    function clearResetConfirmation() {
+      if (state.resetTimer !== null) {
+        window.clearTimeout(state.resetTimer);
+        state.resetTimer = null;
+      }
+      el.resetDefaultsButton.classList.remove("confirming");
+      el.resetDefaultsButton.textContent = "Reset to Defaults";
+    }
+
+    function requestResetDefaults() {
+      if (!el.resetDefaultsButton.classList.contains("confirming")) {
+        el.resetDefaultsButton.classList.add("confirming");
+        el.resetDefaultsButton.textContent = "Tap Again to Reset";
+        el.settingsStatus.textContent = "This clears this game's local settings and progress.";
+        state.resetTimer = window.setTimeout(() => {
+          clearResetConfirmation();
+          el.settingsStatus.textContent = "Reset canceled. Nothing changed.";
+        }, 4000);
+        return;
+      }
+      clearResetConfirmation();
+      safeStorageRemove();
+      settings = { ...DEFAULTS };
+      beginPath(DEFAULTS.divisor);
+      el.settingsStatus.textContent = "Defaults restored. Local progress was cleared.";
+    }
+
+    function openParentPanel() {
+      writeControls();
+      el.parentPanel.classList.add("open");
+      el.settingsButton.setAttribute("aria-expanded", "true");
+      el.settingsStatus.textContent = "No account is needed. Personalization is never sent anywhere.";
+    }
+
+    function closeParentPanel() {
+      clearResetConfirmation();
+      el.parentPanel.classList.remove("open");
+      el.settingsButton.setAttribute("aria-expanded", "false");
+    }
+
+    function nativeFullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement || null;
+    }
+
+    function updateFullscreenButton() {
+      const active = Boolean(nativeFullscreenElement()) || document.body.classList.contains("pseudo-fullscreen");
+      el.fullscreenButton.textContent = active ? "↙" : "⛶";
+      el.fullscreenButton.setAttribute("aria-label", active ? "Exit fullscreen" : "Enter fullscreen");
+      el.fullscreenButton.title = active ? "Exit fullscreen" : "Fullscreen";
+    }
+
+    async function toggleFullscreen() {
+      if (nativeFullscreenElement()) {
+        try { await document.exitFullscreen(); } catch (error) { /* Keep the game usable if blocked. */ }
+        updateFullscreenButton();
+        return;
+      }
+      if (document.body.classList.contains("pseudo-fullscreen")) {
+        document.body.classList.remove("pseudo-fullscreen");
+        updateFullscreenButton();
+        return;
+      }
+      try {
+        if (el.gameCard.requestFullscreen) await el.gameCard.requestFullscreen();
+        else document.body.classList.add("pseudo-fullscreen");
+      } catch (error) {
+        document.body.classList.add("pseudo-fullscreen");
+      }
+      updateFullscreenButton();
+    }
+
+    function buildDivisorOptions() {
+      for (let number = 2; number <= 12; number += 1) {
+        const option = document.createElement("option");
+        option.value = String(number);
+        option.textContent = `Divide by ${number}`;
+        el.divisorSelect.appendChild(option);
+      }
+    }
+
+    el.settingsButton.addEventListener("click", () => {
+      if (el.parentPanel.classList.contains("open")) closeParentPanel(); else openParentPanel();
+    });
+
+    el.fullscreenButton.addEventListener("click", toggleFullscreen);
+    el.applySettingsButton.addEventListener("click", applySettings);
+    el.restartPathButton.addEventListener("click", restartPath);
+    el.resetDefaultsButton.addEventListener("click", requestResetDefaults);
+
+    el.displayModeSelect.addEventListener("change", () => {
+      settings.displayMode = validChoice(el.displayModeSelect.value, ["auto", "phone", "tablet", "computer"], "auto");
+      applyPreferences(true);
+      el.settingsStatus.textContent = settings.displayMode === "auto"
+        ? `Auto is using the ${automaticLayout()} layout for the current viewport.`
+        : `${settings.displayMode[0].toUpperCase()}${settings.displayMode.slice(1)} layout previewed and saved.`;
+    });
+
+    el.largeControlsInput.addEventListener("change", () => {
+      settings.largeControls = el.largeControlsInput.checked;
+      applyPreferences(true);
+      el.settingsStatus.textContent = settings.largeControls ? "Larger controls are on." : "Standard controls are on.";
+    });
+
+    el.reducedMotionInput.addEventListener("change", () => {
+      settings.reducedMotion = el.reducedMotionInput.checked;
+      applyPreferences(true);
+      if (state.hintOpen && !state.completed) renderHint();
+      el.settingsStatus.textContent = settings.reducedMotion ? "Reduced animation is on." : "Standard animation is on.";
+    });
+
+    el.hintButton.addEventListener("click", () => {
+      state.hintOpen = !state.hintOpen;
+      renderHint();
+      el.hintButton.blur();
+    });
+
+    el.replaySharingButton.addEventListener("click", () => {
+      if (!state.completed && state.hintOpen) {
+        prepareSharingAnimation(state.questions[state.index]);
+      }
+      el.replaySharingButton.blur();
+    });
+
+    el.keypad.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      if (button.dataset.key) appendDigit(button.dataset.key);
+      else if (button.dataset.action === "clear") clearInput();
+      else if (button.dataset.action === "check") checkAnswer();
+      button.blur();
+    });
+
+    el.replayButton.addEventListener("click", () => beginPath(state.divisor));
+    el.nextDivisorButton.addEventListener("click", () => beginPath(state.divisor === 12 ? 2 : state.divisor + 1));
+
+    document.addEventListener("keydown", event => {
+      const tag = event.target && event.target.tagName ? event.target.tagName.toUpperCase() : "";
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(tag)) return;
+      if (/^\d$/.test(event.key)) {
+        event.preventDefault();
+        appendDigit(event.key);
+      } else if (event.key === "Backspace" || event.key === "Delete") {
+        event.preventDefault();
+        clearInput();
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (!event.repeat) checkAnswer();
+      } else if (event.key === "Escape") {
+        if (document.body.classList.contains("pseudo-fullscreen")) {
+          document.body.classList.remove("pseudo-fullscreen");
+          updateFullscreenButton();
+        } else if (el.parentPanel.classList.contains("open")) {
+          closeParentPanel();
+        }
+      }
+    }, true);
+
+    window.addEventListener("resize", () => {
+      if (state.resizeFrame !== null) window.cancelAnimationFrame(state.resizeFrame);
+      state.resizeFrame = window.requestAnimationFrame(() => {
+        if (settings.displayMode === "auto") applyPreferences(false);
+        state.resizeFrame = null;
+      });
+    });
+
+    window.addEventListener("orientationchange", () => {
+      window.setTimeout(() => { if (settings.displayMode === "auto") applyPreferences(false); }, 100);
+    });
+
+    document.addEventListener("fullscreenchange", updateFullscreenButton);
+    window.addEventListener("pagehide", () => {
+      cancelSharingAnimation();
+      saveState();
+    });
+
+    buildDivisorOptions();
+    const restored = restoreState();
+    writeControls();
+    applyPreferences(false);
+    if (!restored) beginPath(DEFAULTS.divisor);
+    else {
+      render();
+      if (state.completed) showCompletion(false);
+    }
+    updateFullscreenButton();
+  </script>
+</body>
+</html>
