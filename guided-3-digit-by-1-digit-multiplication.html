@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Guided 3-Digit × 1-Digit Multiplication | Neurons at Play</title>
+  <style>
+    :root {
+      --bg1: #fff7d6;
+      --bg2: #dff6ff;
+      --ink: #1f2937;
+      --muted: #64748b;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --orange: #f97316;
+      --purple: #7c3aed;
+      --red: #dc2626;
+      --line: #111827;
+      --soft: #f8fafc;
+      --shadow: 0 16px 38px rgba(31, 41, 55, 0.14);
+      --radius: 26px;
+      --cell: clamp(76px, 8.2vw, 104px);
+      --carry-height: clamp(42px, 4.6vw, 58px);
+      --gap: clamp(8px, 1.1vw, 13px);
+      --symbol: clamp(46px, 5vw, 64px);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { overscroll-behavior: none; max-width: 100%; overflow-x: hidden; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(250, 204, 21, 0.32), transparent 30%),
+        radial-gradient(circle at top right, rgba(219, 39, 119, 0.12), transparent 32%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      touch-action: manipulation;
+    }
+
+    .app {
+      width: min(1240px, calc(100% - 16px));
+      margin: 0 auto;
+      padding: 8px 0 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.76);
+      border-radius: 22px;
+      padding: 10px 12px;
+      box-shadow: 0 8px 22px rgba(31, 41, 55, 0.08);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 2.8vw, 2.15rem);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .brand-lockup { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-icon { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border-radius: 14px; background: linear-gradient(145deg,#ffe36b,#ff8f70); font-size: 1.6rem; }
+    .title-copy { min-width: 0; }
+    .eyebrow { margin: 0 0 3px; color: #4b5f76; font-size: .72rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .header-actions { display: flex; gap: 7px; }
+    .icon-button { display: grid; width: 44px; height: 44px; padding: 0; place-items: center; color: var(--ink); background: #fff; border: 2px solid #cddbf0; border-radius: 14px; box-shadow: none; font-size: 1.15rem; }
+
+    .speech { min-height: 48px; padding: 10px 14px; color: #244a68; background: #edf8ff; border: 2px solid #b8ddf2; border-radius: 16px; font-size: clamp(.92rem,1.8vw,1.08rem); font-weight: 900; text-align: center; }
+    html[data-step-prompts="hidden"] .speech { display: none; }
+
+    .parent-panel { display: none; padding: 14px; background: rgba(246,250,255,.98); border: 2px solid #c9d9ed; border-radius: 20px; box-shadow: 0 10px 24px rgba(31,41,55,.09); }
+    .parent-panel.open { display: block; }
+    .parent-panel h2 { margin: 0 0 4px; font-size: 1.15rem; }
+    .parent-note { margin: 0 0 12px; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+    .settings-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+    .field { display: grid; gap: 5px; }
+    .field label { color: #43556c; font-size: .76rem; font-weight: 900; }
+    .field input, .field select { width: 100%; min-height: 46px; padding: 0 10px; color: var(--ink); background: #fff; border: 1px solid #bdcde1; border-radius: 11px; font: inherit; }
+    .toggles { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+    .toggle { display: flex; min-height: 46px; align-items: center; gap: 8px; padding: 8px 10px; background: #fff; border: 1px solid #cbd9ea; border-radius: 11px; font-size: .82rem; font-weight: 850; }
+    .toggle input { width: 20px; height: 20px; }
+    .settings-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+    .settings-actions button { min-height: 48px; border-radius: 13px; padding: 8px 12px; }
+    .secondary { color: var(--ink); background: #fff; border: 1px solid #b9c9de; }
+    .reset { color: #923838; background: #fff8f8; border: 2px solid #dea1a1; }
+    .reset.confirming { color: #fff; background: #b33b3b; }
+    .settings-status { min-height: 20px; margin: 9px 0 0; color: var(--muted); font-size: .78rem; }
+    .learning-report { margin-top: 12px; padding: 12px; border: 2px solid #d7e2f0; border-radius: 16px; background: white; }
+    .learning-report summary { cursor: pointer; font-weight: 900; color: var(--ink); }
+    .report-note { margin: 6px 0 10px; color: var(--muted); font-size: .8rem; }
+    .report-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+    .report-card { padding: 9px; border-radius: 12px; background: #f4f7fb; text-align: center; }
+    .report-card strong { display: block; font-size: 1.25rem; color: var(--purple); }
+    .report-card span { font-size: .72rem; color: var(--muted); }
+    .report-guidance { margin: 10px 0 0; font-weight: 800; color: var(--ink); }
+    .report-recent { margin: 7px 0; padding-left: 20px; color: var(--muted); font-size: .82rem; }
+    .report-clear { min-height: 40px; padding: 7px 12px; margin-top: 4px; border-radius: 12px; background: #64748b; font-size: .78rem; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .quiz-strip {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.82);
+      border: 4px solid rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 20px rgba(31, 41, 55, 0.08);
+    }
+
+    .quiz-progress {
+      font-weight: 900;
+      color: var(--ink);
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      height: 22px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+      border: 3px solid #cbd5e1;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #84cc16, #facc15);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .quiz-score {
+      font-weight: 900;
+      color: var(--green);
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 720px) {
+      .quiz-strip { grid-template-columns: 1fr; text-align: center; }
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      min-height: 44px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 900;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(31, 41, 55, 0.13);
+      transition: transform 0.12s ease;
+      font-family: inherit;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:hover { transform: translateY(-1px) scale(1.01); }
+    button:active { transform: translateY(1px) scale(0.98); }
+    button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 4px solid rgba(37,99,235,.28); outline-offset: 2px; }
+
+    .blue { background: var(--blue); }
+    .green { background: var(--green); }
+    .orange { background: var(--orange); }
+    .purple { background: var(--purple); }
+    .red { background: var(--red); }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(290px, 360px);
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 900px) {
+      .topbar { grid-template-columns: 1fr; text-align: center; }
+      h1 { white-space: normal; }
+      .main { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.94);
+      border: 4px solid rgba(255, 255, 255, 0.88);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(10px, 2vw, 18px);
+    }
+
+    .problem-panel {
+      display: grid;
+      align-content: center;
+      justify-content: center;
+      min-height: 560px;
+    }
+
+    .math-stage {
+      display: grid;
+      justify-content: center;
+      overflow-x: auto;
+      width: 100%;
+      padding: 4px;
+    }
+
+    .paper {
+      background: var(--soft);
+      border: 5px solid #e2e8f0;
+      border-radius: 30px;
+      padding: clamp(14px, 2.2vw, 26px);
+      display: grid;
+      gap: var(--gap);
+      box-shadow: inset 0 0 0 3px rgba(31, 41, 55, 0.04);
+    }
+
+    .math-grid {
+      display: grid;
+      grid-template-columns: var(--symbol) repeat(4, var(--cell));
+      gap: var(--gap);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .symbol {
+      width: var(--symbol);
+      height: var(--cell);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 900;
+      color: var(--line);
+    }
+
+    .cell, .small-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    .cell {
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: 20px;
+      font-size: clamp(2.5rem, 6.2vw, 4.4rem);
+    }
+
+    .small-cell {
+      width: var(--cell);
+      height: var(--carry-height);
+      border-radius: 16px;
+      font-size: clamp(1.65rem, 3.5vw, 2.55rem);
+    }
+
+    .blank-space {
+      width: var(--cell);
+      height: var(--cell);
+    }
+
+    .small-space {
+      width: var(--cell);
+      height: var(--carry-height);
+    }
+
+    .fixed {
+      background: #e0f2fe;
+      border: 5px solid #93c5fd;
+    }
+
+    .drop {
+      background: white;
+      border: 5px dashed #94a3b8;
+      cursor: pointer;
+    }
+
+    .drop.filled {
+      border-style: solid;
+      border-color: #cbd5e1;
+    }
+
+    .drop.guided {
+      background: #fee2e2;
+      border-color: var(--red);
+      border-style: solid;
+      transform: scale(1.04);
+      box-shadow: 0 0 0 7px rgba(220, 38, 38, 0.16);
+    }
+
+    .drop.hovered {
+      background: #eff6ff;
+      border-color: var(--blue);
+      transform: scale(1.04);
+    }
+
+    .drop.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+      border-style: solid;
+    }
+
+    .drop.wrong {
+      background: #fee2e2;
+      border-color: #ef4444;
+      border-style: solid;
+    }
+    .drop.needs-correction { background: #fee2e2; border-color: #ef4444; border-style: solid; }
+
+    .carry {
+      background: #fff7ed;
+      border: 4px dashed #fdba74;
+      color: var(--orange);
+    }
+
+    .carry.filled {
+      border-style: solid;
+      border-color: #fb923c;
+    }
+
+    .line {
+      grid-column: 1 / -1;
+      border-top: 8px solid var(--line);
+      height: 0;
+      margin: 2px 0;
+    }
+
+    .side {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+    }
+
+    .side h2 {
+      margin: 0;
+      font-size: clamp(1.2rem, 2.4vw, 1.65rem);
+      text-align: center;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      align-content: start;
+    }
+
+    .key {
+      background: white;
+      color: var(--ink);
+      border: 5px solid #dbeafe;
+      border-radius: 24px;
+      min-height: clamp(70px, 9vh, 98px);
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      box-shadow: none;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .key.wide {
+      grid-column: span 3;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      min-height: 58px;
+    }
+
+    .keyboard-help {
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.3;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .kbd {
+      display: inline-block;
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-bottom-width: 4px;
+      border-radius: 8px;
+      padding: 1px 7px;
+      color: var(--ink);
+      font-weight: 900;
+      font-family: "Courier New", monospace;
+    }
+
+    .status {
+      text-align: center;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      font-weight: 900;
+      min-height: 30px;
+      margin-top: 8px;
+    }
+
+    .stars {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      font-size: 1.75rem;
+      min-height: 34px;
+      margin-top: 2px;
+    }
+
+    .reward-panel {
+      background: rgba(255, 255, 255, 0.92);
+      border: 4px solid rgba(255, 255, 255, 0.9);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .reward-title {
+      text-align: center;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: clamp(1.1rem, 2.3vw, 1.45rem);
+    }
+
+    .rainbow-reward, .star-reward { display: grid; gap: 8px; }
+
+    .star-collection {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(34px, 50px));
+      justify-content: center;
+      gap: 8px;
+      margin: 6px auto;
+    }
+
+    .star-slot {
+      display: grid;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      color: #9aa7b8;
+      background: #f2f5f9;
+      border: 3px dashed #c8d1dd;
+      border-radius: 15px;
+      font-size: 1.55rem;
+    }
+
+    .star-slot.filled {
+      color: #d48b00;
+      background: #fff5bc;
+      border-color: #efbd2e;
+      border-style: solid;
+      animation: stickerPop .38s ease;
+    }
+
+    .sticker-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      min-height: 58px;
+    }
+
+    .sticker {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 2.1rem;
+      background: #fef3c7;
+      border: 4px solid #fde68a;
+      box-shadow: 0 8px 16px rgba(31, 41, 55, 0.12);
+      animation: stickerPop 0.38s ease;
+    }
+
+    .bonus-message {
+      text-align: center;
+      font-weight: 900;
+      color: var(--purple);
+      min-height: 26px;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+    }
+
+    @keyframes stickerPop {
+      0% { transform: scale(0.2) rotate(-16deg); opacity: 0; }
+      70% { transform: scale(1.18) rotate(8deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .drag-ghost {
+      position: fixed;
+      z-index: 9999;
+      width: 82px;
+      height: 82px;
+      border-radius: 24px;
+      background: white;
+      border: 5px solid var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
+      font-weight: 900;
+      pointer-events: none;
+      box-shadow: 0 18px 38px rgba(31, 41, 55, 0.22);
+      transform: translate(-50%, -50%);
+    }
+
+    .tiny-help {
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.3;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .celebration {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 20;
+    }
+
+    .reward-toast {
+      position: fixed;
+      left: 50%;
+      top: clamp(88px, 15vh, 150px);
+      z-index: 10000;
+      width: min(430px, calc(100% - 28px));
+      padding: 18px 20px;
+      transform: translate(-50%, -18px) scale(.92);
+      opacity: 0;
+      pointer-events: none;
+      text-align: center;
+      color: var(--ink);
+      background: rgba(255, 255, 255, .98);
+      border: 5px solid #facc15;
+      border-radius: 28px;
+      box-shadow: 0 24px 58px rgba(31, 41, 55, .28);
+      transition: opacity .18s ease, transform .22s ease;
+    }
+
+    .reward-toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    .reward-toast-emoji {
+      font-size: clamp(3.4rem, 10vw, 5.6rem);
+      line-height: 1;
+      margin-bottom: 6px;
+      animation: stickerPop .38s ease;
+    }
+
+    .reward-toast-title {
+      font-size: clamp(1.35rem, 4vw, 2rem);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .reward-toast-detail {
+      margin-top: 6px;
+      color: #5b6b7e;
+      font-size: clamp(.95rem, 2.5vw, 1.12rem);
+      font-weight: 850;
+    }
+
+    .confetti {
+      position: absolute;
+      top: -30px;
+      font-size: 2rem;
+      animation: fall 1.8s linear forwards;
+    }
+
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(720deg); opacity: 0.85; }
+    }
+
+    button:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .rainbow-arc {
+      width: min(470px, 94%);
+      height: 205px;
+      margin: 2px auto 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stripe {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 320px 320px 0 0;
+      border-style: solid;
+      border-bottom: 0;
+      background: transparent;
+      transition: border-color 0.25s ease;
+    }
+
+    .stripe.empty {
+      border-color: #e5e7eb !important;
+    }
+
+    .color-prompt {
+      display: none;
+      text-align: center;
+      font-weight: 900;
+      color: var(--purple);
+      font-size: clamp(1rem, 2vw, 1.28rem);
+      margin: 4px 0;
+    }
+
+    .color-palette {
+      display: none;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .color-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 4px solid white;
+      box-shadow: 0 4px 0 rgba(31, 41, 55, 0.22), 0 0 0 2px rgba(31, 41, 55, 0.12);
+      font-size: 0;
+      padding: 0;
+    }
+
+    .color-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(31, 41, 55, 0.22), 0 0 0 2px rgba(31, 41, 55, 0.12);
+    }
+
+    .rainbow-complete {
+      display: none;
+      text-align: center;
+      font-weight: 900;
+      color: #db2777;
+      font-size: clamp(1.15rem, 2.3vw, 1.55rem);
+      min-height: 28px;
+    }
+
+    @media (max-width: 720px) {
+      .rainbow-arc {
+        height: 150px;
+      }
+
+      .color-btn {
+        width: 44px;
+        height: 44px;
+      }
+
+      .star-collection { grid-template-columns: repeat(5, 44px); gap: 7px; }
+      .star-slot { width: 44px; height: 44px; }
+    }
+
+
+    .section-label {
+      text-align: center;
+      font-weight: 900;
+      color: var(--ink);
+      font-size: clamp(1rem, 2vw, 1.2rem);
+    }
+
+    html[data-large-controls="true"] button { min-height: 52px; }
+    html[data-large-controls="true"] .key { min-height: 82px; }
+    html[data-reduced-motion="true"] *, html[data-reduced-motion="true"] *::before, html[data-reduced-motion="true"] *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+
+    html[data-layout="phone"] .app { width: min(480px,calc(100% - 10px)); padding-top: 5px; }
+    html[data-layout="phone"] .topbar { padding: 8px; border-radius: 17px; }
+    html[data-layout="phone"] .eyebrow { display: none; }
+    html[data-layout="phone"] h1 { font-size: 1.08rem; }
+    html[data-layout="phone"] .settings-grid, html[data-layout="phone"] .toggles, html[data-layout="phone"] .settings-actions { grid-template-columns: 1fr; }
+    html[data-layout="phone"] .controls { gap: 6px; }
+    html[data-layout="phone"] .controls button { min-height: 44px; padding: 9px 12px; font-size: .86rem; }
+    html[data-layout="phone"] .quiz-strip { padding: 8px 10px; gap: 7px; }
+    html[data-layout="phone"] .main { grid-template-columns: 1fr; }
+    html[data-layout="phone"] .problem-panel { min-height: 360px; }
+    html[data-layout="phone"] .paper { padding: 9px; border-width: 3px; border-radius: 20px; }
+    html[data-layout="phone"] { --cell: 52px; --carry-height: 34px; --gap: 4px; --symbol: 32px; }
+    html[data-layout="phone"] .cell { border-width: 3px; border-radius: 12px; font-size: 2rem; }
+    html[data-layout="phone"] .small-cell { border-width: 3px; border-radius: 9px; font-size: 1.35rem; }
+    html[data-layout="phone"] .line { border-top-width: 5px; }
+    html[data-layout="phone"] .side { padding: 10px; }
+    html[data-layout="phone"] .keypad { gap: 7px; }
+    html[data-layout="phone"] .key { min-height: 54px; border-width: 3px; border-radius: 16px; font-size: 2rem; }
+    html[data-layout="phone"] .reward-panel { padding: 10px; }
+    html[data-layout="tablet"] .main { grid-template-columns: 1fr; }
+    html[data-layout="tablet"] .problem-panel { min-height: 460px; }
+    html[data-layout="computer"] .app { width: min(1320px,calc(100% - 20px)); }
+
+    @media (max-width: 600px) {
+      :root { --cell: 52px; --carry-height: 34px; --gap: 4px; --symbol: 32px; }
+      .math-stage { overflow-x: hidden; }
+      .settings-grid, .toggles, .settings-actions { grid-template-columns: 1fr; }
+    }
+
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-icon" aria-hidden="true">🌈</div>
+        <div class="title-copy">
+          <p class="eyebrow">Neurons at Play</p>
+          <h1>Guided 3-Digit × 1-Digit Multiplication</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" id="fullscreenButton" type="button" aria-label="Enter full screen" title="Full screen">⛶</button>
+        <button class="icon-button" id="settingsButton" type="button" aria-expanded="false" aria-controls="parentPanel" aria-label="Open parent setup" title="Parent setup">⚙️</button>
+      </div>
+    </section>
+
+    <section class="parent-panel" id="parentPanel" aria-label="Parent setup">
+      <h2>Parent setup</h2>
+      <p class="parent-note">Choose a focused practice set. Settings and progress stay in this browser. Use a nickname only—do not enter identifying or sensitive information.</p>
+      <div class="settings-grid">
+        <div class="field">
+          <label for="nicknameInput">Optional nickname</label>
+          <input id="nicknameInput" type="text" maxlength="24" value="Player" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="multiplierSelect">Multiplier practice</label>
+          <select id="multiplierSelect">
+            <option value="mixed">Mixed ×2–×9</option>
+            <option value="2">Only ×2</option><option value="3">Only ×3</option><option value="4">Only ×4</option><option value="5">Only ×5</option>
+            <option value="6">Only ×6</option><option value="7">Only ×7</option><option value="8">Only ×8</option><option value="9">Only ×9</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sessionLengthSelect">Session</label>
+          <select id="sessionLengthSelect"><option value="10">10 questions</option><option value="endless">Keep going</option></select>
+        </div>
+        <div class="field">
+          <label for="entryModeSelect">Working style</label>
+          <select id="entryModeSelect"><option value="guided">Guided</option><option value="not-guided">Not Guided</option></select>
+        </div>
+        <div class="field">
+          <label for="stepPromptsSelect">Step prompts</label>
+          <select id="stepPromptsSelect"><option value="shown">Shown</option><option value="hidden">Hidden</option></select>
+        </div>
+        <div class="field">
+          <label for="rewardSelect">Reward</label>
+          <select id="rewardSelect">
+            <option value="rainbow">Build a rainbow</option>
+            <option value="stars">Shining stars</option>
+            <option value="space">Space adventure</option>
+            <option value="ocean">Ocean friends</option>
+            <option value="animals">Animal parade</option>
+            <option value="treats">Tasty treats</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="displayModeSelect">Layout</label>
+          <select id="displayModeSelect"><option value="auto">Auto</option><option value="phone">Phone</option><option value="tablet">Tablet</option><option value="computer">Computer</option></select>
+        </div>
+      </div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="largeControlsInput"> Larger controls</label>
+        <label class="toggle"><input type="checkbox" id="reducedMotionInput"> Reduced animation</label>
+      </div>
+      <details class="learning-report" id="learningReport">
+        <summary>Local learning report</summary>
+        <p class="report-note">A parent-only summary stored on this device. It is never sent anywhere.</p>
+        <div class="report-grid">
+          <div class="report-card"><strong id="reportCompleted">0</strong><span>completed</span></div>
+          <div class="report-card"><strong id="reportFirstTry">—</strong><span>correct on first check</span></div>
+          <div class="report-card"><strong id="reportRetries">0</strong><span>needed another try</span></div>
+        </div>
+        <p class="report-guidance" id="reportGuidance">Complete a few questions to see practice guidance.</p>
+        <p class="report-note" id="reportSpecifics"></p>
+        <ul class="report-recent" id="reportRecent"></ul>
+        <button class="green report-clear" id="createFocusButton" type="button" disabled>Create Questions from Missed Work</button>
+        <button class="report-clear" id="clearReportButton" type="button">Clear Learning Report</button>
+      </details>
+      <div class="settings-actions">
+        <button class="green" id="applySettingsButton" type="button">Start with These Settings</button>
+        <button class="secondary" id="restartSessionButton" type="button">Restart This Session</button>
+        <button class="reset" id="resetDefaultsButton" type="button">Reset to Defaults</button>
+      </div>
+      <p class="settings-status" id="settingsStatus" role="status">No account is needed. Nothing is sent anywhere.</p>
+    </section>
+
+    <div class="speech" id="speech" role="status" aria-live="polite"></div>
+
+    <section class="controls">
+      <button class="orange" onclick="showHint()">Hint</button>
+      <button class="green" onclick="checkWork()">Check</button>
+      <button class="red" onclick="clearCurrentWork()">Clear</button>
+    </section>
+
+    <section class="quiz-strip">
+      <div class="quiz-progress" id="quizProgress">Question 1 of 10</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="quiz-score" id="quizScore">Correct: 0</div>
+    </section>
+
+    <section class="main">
+      <div class="panel problem-panel">
+        <div class="math-stage">
+          <div class="paper">
+            <div class="math-grid" id="mathGrid"></div>
+          </div>
+        </div>
+        <div class="status" id="status"></div>
+        <div class="stars" id="stars"></div>
+      </div>
+
+      <aside class="panel side">
+        <h2>Keypad</h2>
+        <div class="keypad" id="keypad"></div>
+        <p class="tiny-help">Touch: tap a number, or press and drag a number into the red box.</p>
+        <p class="keyboard-help"><span class="kbd">0-9</span> fill box · <span class="kbd">Backspace</span> erase · <span class="kbd">Enter</span> check</p>
+      </aside>
+    </section>
+
+    <section class="reward-panel" id="rewardPanel">
+      <div class="reward-title" id="rewardTitle">Build Your Own Rainbow 🌈</div>
+      <div class="rainbow-reward" id="rainbowReward">
+        <div class="section-label" id="rainbowLabel">Standard Rainbow (Questions 1–10)</div>
+        <div class="rainbow-arc" id="rainbowArc"></div>
+        <div class="rainbow-complete" id="rainbowComplete">You made your rainbow! 🎉 Keep going for bonus colours!</div>
+        <div class="color-prompt" id="colorPrompt">Pick a colour for your next stripe!</div>
+        <div class="color-palette" id="colorPalette"></div>
+      </div>
+      <div class="star-reward" id="starReward" hidden>
+        <div class="section-label" id="starLabel">Your Collection (Questions 1–10)</div>
+        <div class="star-collection" id="starCollection" aria-label="Collected rewards"></div>
+        <div class="rainbow-complete" id="starComplete"></div>
+      </div>
+      <div class="bonus-message" id="bonusMessage">Get a rainbow stripe for each correct answer.</div>
+    </section>
+  </main>
+
+  <div class="celebration" id="celebration"></div>
+  <div class="reward-toast" id="rewardToast" role="status" aria-live="assertive" aria-atomic="true">
+    <div class="reward-toast-emoji" id="rewardToastEmoji" aria-hidden="true"></div>
+    <div class="reward-toast-title" id="rewardToastTitle"></div>
+    <div class="reward-toast-detail" id="rewardToastDetail"></div>
+  </div>
+
+  <script>
+    var topNum = 234;
+    var bottomNum = 6;
+    var values = {};
+    var guideOrder = [];
+    var guideIndex = 0;
+    var selectedId = null;
+    var entryHistory = [];
+    var stars = 0;
+    var pointerDrag = null;
+    var quizQuestions = [];
+    var currentQuestionIndex = 0;
+    var correctCount = 0;
+    var answeredCurrent = false;
+    var stripeColors = [];
+    var waitingForColorPick = false;
+    var STANDARD_COUNT = 10;
+    var MAX_COUNT = 10;
+    var STORAGE_KEY = 'neuronsAtPlay.guided3x1Multiplication.public.v3';
+    var DEFAULT_SETTINGS = {
+      nickname: 'Player',
+      multiplier: 'mixed',
+      entryMode: 'guided',
+      sessionLength: 10,
+      stepPrompts: 'hidden',
+      reward: 'space',
+      displayMode: 'auto',
+      largeControls: false,
+      reducedMotion: false
+    };
+    var settings = Object.assign({}, DEFAULT_SETTINGS);
+    var learningReport = emptyLearningReport();
+    var currentHadIncorrect = false;
+    var currentHintUsed = false;
+    var currentMissedPlaces = {};
+    var currentMissedFacts = {};
+    var currentCarryOmissions = {};
+    var currentExtraCarries = {};
+    var currentMultiplicationErrors = {};
+    var currentForgotAddedCarry = {};
+    var focusQuestionMode = false;
+    var correctionMode = false;
+    var correctionTargets = {};
+    var autoAdvanceTimer = null;
+    var reportResetTimer = null;
+    var rewardToastTimer = null;
+    var REWARD_THEMES = {
+      stars: {
+        title: 'Shining Stars', singular: 'star', plural: 'stars', marker: '⭐',
+        accent: '#efbd2e', background: '#fff5bc',
+        emojis: ['⭐','🌟','✨','💫','⭐','🌟','✨','💫','⭐','🌟']
+      },
+      space: {
+        title: 'Space Adventure', singular: 'space treasure', plural: 'space treasures', marker: '🚀',
+        accent: '#7656c9', background: '#eee8ff',
+        emojis: ['🚀','🌙','🪐','⭐','👽','☄️','🌎','🛸','🔭','🌌']
+      },
+      ocean: {
+        title: 'Ocean Friends', singular: 'ocean friend', plural: 'ocean friends', marker: '🐠',
+        accent: '#168eb1', background: '#dcf7ff',
+        emojis: ['🐠','🐙','🐬','🦀','🐳','🐚','🦈','🐢','🪼','🐡']
+      },
+      animals: {
+        title: 'Animal Parade', singular: 'animal friend', plural: 'animal friends', marker: '🦁',
+        accent: '#e47735', background: '#fff0dc',
+        emojis: ['🐶','🐱','🐰','🦊','🐼','🐨','🦁','🐯','🐸','🦄']
+      },
+      treats: {
+        title: 'Tasty Treats', singular: 'treat', plural: 'treats', marker: '🍪',
+        accent: '#db4d7b', background: '#ffe7f0',
+        emojis: ['🍓','🧁','🍪','🍉','🍦','🍩','🍎','🍒','🥨','🍰']
+      }
+    };
+    var resetTimer = null;
+    var resizeFrame = null;
+    var baseRainbowColors = [
+      { name: 'Red', value: '#ff3b30' },
+      { name: 'Orange', value: '#ff9500' },
+      { name: 'Yellow', value: '#ffcc00' },
+      { name: 'Green', value: '#34c759' },
+      { name: 'Blue', value: '#007aff' },
+      { name: 'Indigo', value: '#4b0082' },
+      { name: 'Violet', value: '#af52de' },
+      { name: 'Pink', value: '#ff5d8f' },
+      { name: 'Aqua', value: '#00c2cb' },
+      { name: 'Gold', value: '#f5b700' },
+      { name: 'Lavender', value: '#cdb4db' },
+      { name: 'Mint', value: '#80ed99' },
+      { name: 'Peach', value: '#ffb4a2' },
+      { name: 'Magenta', value: '#ff00a8' },
+      { name: 'Turquoise', value: '#40e0d0' },
+      { name: 'Lime', value: '#a3e635' },
+      { name: 'Purple', value: '#7c3aed' },
+      { name: 'Brown', value: '#8b5e3c' },
+      { name: 'Black', value: '#111827' },
+      { name: 'White', value: '#ffffff' },
+      { name: 'Gray', value: '#9ca3af' }
+    ];
+    var specialBonusColors = [
+      { name: 'Silver', value: '#c0c0c0' },
+      { name: 'Coral', value: '#ff6f61' },
+      { name: 'Sky Blue', value: '#87ceeb' },
+      { name: 'Rose Gold', value: '#b76e79' },
+      { name: 'Emerald', value: '#50c878' },
+      { name: 'Lilac', value: '#c8a2c8' },
+      { name: 'Amber', value: '#ffbf00' },
+      { name: 'Teal', value: '#008080' },
+      { name: 'Burgundy', value: '#800020' },
+      { name: 'Cream', value: '#fffdd0' },
+      { name: 'Olive', value: '#808000' },
+      { name: 'Hot Pink', value: '#ff69b4' },
+      { name: 'Navy', value: '#000080' },
+      { name: 'Mint Cream', value: '#f5fffa' },
+      { name: 'Plum', value: '#8e4585' },
+      { name: 'Tangerine', value: '#f28500' },
+      { name: 'Slate', value: '#708090' },
+      { name: 'Cyan', value: '#00ffff' },
+      { name: 'Chocolate', value: '#7b3f00' },
+      { name: 'Periwinkle', value: '#ccccff' }
+    ];
+
+    function safeStorageGet() { try { return window.localStorage.getItem(STORAGE_KEY); } catch (error) { return null; } }
+    function safeStorageSet(value) { try { window.localStorage.setItem(STORAGE_KEY, value); } catch (error) { /* Local play still works. */ } }
+    function safeStorageRemove() { try { window.localStorage.removeItem(STORAGE_KEY); } catch (error) { /* Reset in memory still works. */ } }
+
+    function emptyLearningReport() {
+      return { completed: 0, firstTry: 0, retried: 0, hints: 0, carryOmissions: 0, extraCarries: 0, multiplicationErrors: 0, forgotAddedCarry: 0, byMultiplier: {}, missedPlaces: {}, missedFacts: {}, recentMisses: [], recentDetails: [] };
+    }
+
+    function sanitizeLearningReport(candidate) {
+      candidate = candidate || {};
+      var report = emptyLearningReport();
+      ['completed','firstTry','retried','hints','carryOmissions','extraCarries','multiplicationErrors','forgotAddedCarry'].forEach(function(key) {
+        report[key] = Math.max(0, Math.min(100000, Number(candidate[key]) || 0));
+      });
+      ['byMultiplier','missedPlaces','missedFacts'].forEach(function(group) {
+        var source = candidate[group] || {};
+        Object.keys(source).slice(0, 20).forEach(function(key) {
+          report[group][String(key).slice(0, 20)] = Math.max(0, Math.min(100000, Number(source[key]) || 0));
+        });
+      });
+      report.recentMisses = Array.isArray(candidate.recentMisses)
+        ? candidate.recentMisses.slice(0, 8).map(function(value) { return String(value).slice(0, 24); })
+        : [];
+      report.recentDetails = Array.isArray(candidate.recentDetails)
+        ? candidate.recentDetails.slice(0, 8).map(function(value) { return String(value).slice(0, 120); })
+        : [];
+      return report;
+    }
+
+    function normalizeNickname(value) {
+      var compact = String(value || '').replace(/\s+/g, ' ').trim().slice(0, 24);
+      return compact || DEFAULT_SETTINGS.nickname;
+    }
+
+    function sanitizeSettings(candidate) {
+      candidate = candidate || {};
+      var multiplier = String(candidate.multiplier || DEFAULT_SETTINGS.multiplier);
+      if (['mixed','2','3','4','5','6','7','8','9'].indexOf(multiplier) < 0) multiplier = 'mixed';
+      var sessionLength = candidate.sessionLength === 'endless' ? 'endless' : 10;
+      var entryMode = candidate.entryMode === 'not-guided' ? 'not-guided' : 'guided';
+      var stepPrompts = candidate.stepPrompts === 'shown' ? 'shown' : 'hidden';
+      var reward = ['rainbow','stars','space','ocean','animals','treats'].indexOf(candidate.reward) >= 0
+        ? candidate.reward
+        : 'rainbow';
+      var displayMode = ['auto','phone','tablet','computer'].indexOf(candidate.displayMode) >= 0 ? candidate.displayMode : 'auto';
+      return {
+        nickname: normalizeNickname(candidate.nickname),
+        multiplier: multiplier,
+        sessionLength: sessionLength,
+        entryMode: entryMode,
+        stepPrompts: stepPrompts,
+        reward: reward,
+        displayMode: displayMode,
+        largeControls: Boolean(candidate.largeControls),
+        reducedMotion: Boolean(candidate.reducedMotion)
+      };
+    }
+
+    function automaticLayout() {
+      var width = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
+      var height = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
+      if (width <= 600 || (width <= 950 && height <= 500)) return 'phone';
+      if (width <= 1100) return 'tablet';
+      return 'computer';
+    }
+
+    function applyPreferences(shouldSave) {
+      var layout = settings.displayMode === 'auto' ? automaticLayout() : settings.displayMode;
+      document.documentElement.dataset.layout = layout;
+      document.documentElement.dataset.largeControls = String(settings.largeControls);
+      document.documentElement.dataset.reducedMotion = String(settings.reducedMotion);
+      document.documentElement.dataset.stepPrompts = settings.stepPrompts;
+      if (shouldSave) savePublicState();
+    }
+
+    function writeControls() {
+      document.getElementById('nicknameInput').value = settings.nickname;
+      document.getElementById('multiplierSelect').value = settings.multiplier;
+      document.getElementById('sessionLengthSelect').value = String(settings.sessionLength);
+      document.getElementById('entryModeSelect').value = settings.entryMode;
+      document.getElementById('stepPromptsSelect').value = settings.stepPrompts;
+      document.getElementById('rewardSelect').value = settings.reward;
+      document.getElementById('displayModeSelect').value = settings.displayMode;
+      document.getElementById('largeControlsInput').checked = settings.largeControls;
+      document.getElementById('reducedMotionInput').checked = settings.reducedMotion;
+    }
+
+    function readControls() {
+      return sanitizeSettings({
+        nickname: document.getElementById('nicknameInput').value,
+        multiplier: document.getElementById('multiplierSelect').value,
+        sessionLength: document.getElementById('sessionLengthSelect').value,
+        entryMode: document.getElementById('entryModeSelect').value,
+        stepPrompts: document.getElementById('stepPromptsSelect').value,
+        reward: document.getElementById('rewardSelect').value,
+        displayMode: document.getElementById('displayModeSelect').value,
+        largeControls: document.getElementById('largeControlsInput').checked,
+        reducedMotion: document.getElementById('reducedMotionInput').checked
+      });
+    }
+
+    function savePublicState() {
+      safeStorageSet(JSON.stringify({
+        settings: settings,
+        learningReport: learningReport
+      }));
+    }
+
+    function restorePublicState() {
+      var raw = safeStorageGet();
+      if (!raw) return false;
+      try {
+        var stored = JSON.parse(raw);
+        settings = sanitizeSettings(stored.settings);
+        learningReport = sanitizeLearningReport(stored.learningReport);
+        return false;
+      } catch (error) { return false; }
+    }
+
+    function digits(n) { return String(n).split('').map(function(d) { return Number(d); }); }
+    function answer() { return topNum * bottomNum; }
+
+    function makeBox(id, row, col, value) {
+      return { id: id, row: row, col: col, value: String(value) };
+    }
+
+    function specForProblem(top, multiplier) {
+      var topDigits = digits(top); // hundreds, tens, ones
+      var h = topDigits[0];
+      var t = topDigits[1];
+      var o = topDigits[2];
+
+      var answerBoxes = [];
+      var carryBoxes = [];
+      var expected = {};
+      var order = [];
+
+      function addAnswer(col, value) {
+        var id = 'answer-' + col;
+        answerBoxes.push(makeBox(id, 'answer', col, value));
+        expected[id] = String(value);
+        return id;
+      }
+
+      function addCarry(col, value) {
+        if (value <= 0 || col < 0) return null;
+        var id = 'carry-' + col;
+        carryBoxes.push(makeBox(id, 'carry', col, value));
+        expected[id] = String(value);
+        return id;
+      }
+
+      // Ones column
+      var step1 = o * multiplier;
+      var answerOnes = step1 % 10;
+      var carryToTens = Math.floor(step1 / 10);
+      var onesId = addAnswer(3, answerOnes);
+      order.push(onesId);
+      var carryTensId = addCarry(2, carryToTens);
+      if (carryTensId) order.push(carryTensId);
+
+      // Tens column
+      var step2 = t * multiplier + carryToTens;
+      var answerTens = step2 % 10;
+      var carryToHundreds = Math.floor(step2 / 10);
+      var tensId = addAnswer(2, answerTens);
+      order.push(tensId);
+      var carryHundredsId = addCarry(1, carryToHundreds);
+      if (carryHundredsId) order.push(carryHundredsId);
+
+      // Hundreds column
+      var step3 = h * multiplier + carryToHundreds;
+      var answerHundreds = step3 % 10;
+      var carryToThousands = Math.floor(step3 / 10);
+      var hundredsId = addAnswer(1, answerHundreds);
+      order.push(hundredsId);
+      var carryThousandsId = addCarry(0, carryToThousands);
+      if (carryThousandsId) order.push(carryThousandsId);
+
+      // Leading thousands digit, only if needed.
+      if (carryToThousands > 0) {
+        var thousandsId = addAnswer(0, carryToThousands);
+        order.push(thousandsId);
+      }
+
+      if (settings.entryMode === 'not-guided') {
+        answerBoxes = [0,1,2,3].map(function(col) {
+          var productText = String(top * multiplier).padStart(4, ' ');
+          var value = productText[col] === ' ' ? '' : productText[col];
+          var box = makeBox('answer-' + col, 'answer', col, value);
+          expected[box.id] = value;
+          return box;
+        });
+        var carryValues = [carryToThousands, carryToHundreds, carryToTens, ''];
+        carryBoxes = [0,1,2,3].map(function(col) {
+          var value = carryValues[col] === 0 ? '' : String(carryValues[col]);
+          var box = makeBox('carry-' + col, 'carry', col, value);
+          expected[box.id] = value;
+          return box;
+        });
+        order = answerBoxes.concat(carryBoxes).map(function(box) { return box.id; });
+      }
+
+      return {
+        answerBoxes: answerBoxes,
+        carryBoxes: carryBoxes,
+        expected: expected,
+        order: order
+      };
+    }
+
+    function currentId() { return guideOrder[guideIndex] || null; }
+
+    function resetValuesForSpec(spec) {
+      values = {};
+      Object.keys(spec.expected).forEach(function(id) { values[id] = ''; });
+      guideOrder = spec.order.slice();
+      guideIndex = 0;
+      selectedId = settings.entryMode === 'guided' ? currentId() : null;
+      entryHistory = [];
+      answeredCurrent = false;
+    }
+
+    function makeSymbol(text, small) {
+      var el = document.createElement('div');
+      el.className = 'symbol';
+      el.style.height = small ? 'var(--carry-height)' : 'var(--cell)';
+      el.textContent = text || '';
+      return el;
+    }
+
+    function makeBlank(small) {
+      var el = document.createElement('div');
+      el.className = small ? 'small-space' : 'blank-space';
+      return el;
+    }
+
+    function makeFixed(text) {
+      var el = document.createElement('div');
+      el.className = 'cell fixed';
+      el.textContent = text;
+      return el;
+    }
+
+    function makeDrop(box, small, carry) {
+      var el = document.createElement('div');
+      var val = values[box.id] || '';
+      var classes = [];
+      classes.push(small ? 'small-cell' : 'cell');
+      classes.push('drop');
+      if (carry) classes.push('carry');
+      if (val) classes.push('filled');
+      if (box.id === selectedId) classes.push('guided');
+      if (correctionTargets[box.id]) classes.push('needs-correction');
+      el.className = classes.join(' ');
+      el.textContent = val;
+      el.id = box.id;
+      el.dataset.id = box.id;
+
+      el.addEventListener('click', function() {
+        if (correctionMode && correctionTargets[box.id]) {
+          selectedId = box.id;
+          render();
+          setStatus('Box selected. Choose the replacement digit.');
+        } else if (settings.entryMode === 'not-guided') {
+          selectedId = box.id;
+          clearMarks();
+          render();
+          setStatus('Box selected. Choose a number or drag one here.');
+        } else if (box.id !== selectedId) {
+          setStatus('Use the red box.');
+        }
+      });
+
+      el.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if ((correctionMode && correctionTargets[box.id]) || settings.entryMode === 'not-guided' || box.id === selectedId) el.classList.add('hovered');
+      });
+
+      el.addEventListener('dragleave', function() {
+        el.classList.remove('hovered');
+      });
+
+      el.addEventListener('drop', function(e) {
+        e.preventDefault();
+        el.classList.remove('hovered');
+        var digit = e.dataTransfer.getData('text/plain');
+        fillGuidedBox(box.id, digit);
+      });
+
+      return el;
+    }
+
+    function findBox(boxes, col) {
+      for (var i = 0; i < boxes.length; i++) {
+        if (boxes[i].col === col) return boxes[i];
+      }
+      return null;
+    }
+
+    function addLine(grid) {
+      var line = document.createElement('div');
+      line.className = 'line';
+      grid.appendChild(line);
+    }
+
+    function renderCarryRow(grid, carryBoxes) {
+      grid.appendChild(makeSymbol('', true));
+      for (var col = 0; col < 4; col++) {
+        var box = findBox(carryBoxes, col);
+        grid.appendChild(box ? makeDrop(box, true, true) : makeBlank(true));
+      }
+    }
+
+    function renderFixedTopRow(grid) {
+      var top = digits(topNum);
+      grid.appendChild(makeSymbol('', false));
+      grid.appendChild(makeBlank(false));
+      grid.appendChild(makeFixed(top[0]));
+      grid.appendChild(makeFixed(top[1]));
+      grid.appendChild(makeFixed(top[2]));
+    }
+
+    function renderBottomRow(grid) {
+      grid.appendChild(makeSymbol('x', false));
+      grid.appendChild(makeBlank(false));
+      grid.appendChild(makeBlank(false));
+      grid.appendChild(makeBlank(false));
+      grid.appendChild(makeFixed(bottomNum));
+    }
+
+    function renderAnswerRow(grid, answerBoxes) {
+      grid.appendChild(makeSymbol('', false));
+      for (var col = 0; col < 4; col++) {
+        var box = findBox(answerBoxes, col);
+        grid.appendChild(box ? makeDrop(box, false, false) : makeBlank(false));
+      }
+    }
+
+    function render() {
+      var spec = specForProblem(topNum, bottomNum);
+      var grid = document.getElementById('mathGrid');
+      grid.innerHTML = '';
+      renderCarryRow(grid, spec.carryBoxes);
+      renderFixedTopRow(grid);
+      renderBottomRow(grid);
+      addLine(grid);
+      renderAnswerRow(grid, spec.answerBoxes);
+    }
+
+    function renderKeypad() {
+      var keypad = document.getElementById('keypad');
+      keypad.innerHTML = '';
+      ['1','2','3','4','5','6','7','8','9','0'].forEach(function(digit) {
+        var key = document.createElement('button');
+        key.className = 'key';
+        key.textContent = digit;
+
+        key.addEventListener('pointerdown', function(e) {
+          startPointerDrag(e, digit);
+        });
+
+        key.addEventListener('click', function() {
+          if (pointerDrag && pointerDrag.wasDragging) return;
+          fillGuidedBox((settings.entryMode === 'not-guided' || correctionMode) ? selectedId : currentId(), digit);
+        });
+
+        keypad.appendChild(key);
+      });
+
+      var erase = document.createElement('button');
+      erase.className = 'key wide';
+      erase.textContent = 'Erase Last';
+      erase.onclick = eraseLast;
+      keypad.appendChild(erase);
+    }
+
+    function handlePhysicalKeyboard(event) {
+      var tag = event.target && event.target.tagName ? event.target.tagName.toUpperCase() : '';
+      if (['INPUT','SELECT','TEXTAREA','BUTTON'].indexOf(tag) >= 0 || (event.target && event.target.isContentEditable)) return;
+      var key = event.key;
+
+      if (/^[0-9]$/.test(key)) {
+        event.preventDefault();
+        fillGuidedBox((settings.entryMode === 'not-guided' || correctionMode) ? selectedId : currentId(), key);
+        flashKey(key);
+        return;
+      }
+
+      if (key === 'Backspace' || key === 'Delete') {
+        event.preventDefault();
+        eraseLast();
+        return;
+      }
+
+      if (key === 'Enter') {
+        event.preventDefault();
+        checkWork();
+        return;
+      }
+
+      if (key.toLowerCase() === 'h') {
+        event.preventDefault();
+        showHint();
+        return;
+      }
+
+      if (key.toLowerCase() === 'c') {
+        event.preventDefault();
+        clearWork();
+      }
+    }
+
+    function flashKey(digit) {
+      var keys = document.querySelectorAll('.key');
+      keys.forEach(function(keyEl) {
+        if (keyEl.textContent === digit) {
+          keyEl.style.transform = 'scale(0.94)';
+          setTimeout(function() { keyEl.style.transform = ''; }, 100);
+        }
+      });
+    }
+
+    function fillGuidedBox(id, digit) {
+      if (!id || !digit || !/^[0-9]$/.test(digit)) return;
+      if (answeredCurrent) {
+        setStatus('This problem is complete. The next question is loading.');
+        return;
+      }
+      if (correctionMode) {
+        if (!correctionTargets[id]) {
+          setStatus('Choose one of the marked boxes.');
+          return;
+        }
+        values[id] = digit;
+        selectedId = null;
+        render();
+        setStatus('Digit replaced. Press Check when you are ready.');
+        return;
+      }
+      if (settings.entryMode === 'guided' && id !== currentId()) {
+        setStatus('Use the red box.');
+        return;
+      }
+
+      values[id] = digit;
+      entryHistory = entryHistory.filter(function(previousId) { return previousId !== id; });
+      entryHistory.push(id);
+      if (settings.entryMode === 'not-guided') {
+        selectedId = null;
+        clearMarks();
+        render();
+        updateSpeech();
+        setStatus('Choose another box, or press Check when you are ready.');
+        savePublicState();
+        return;
+      }
+      guideIndex += 1;
+      selectedId = currentId();
+      clearMarks();
+      render();
+      updateSpeech();
+      setStatus('');
+
+      if (!currentId()) setStatus('All boxes are filled. Press Check.');
+      savePublicState();
+    }
+
+    function eraseLast() {
+      if (correctionMode) {
+        if (!selectedId || !correctionTargets[selectedId]) {
+          setStatus('Tap a marked box first.');
+          return;
+        }
+        values[selectedId] = '';
+        render();
+        setStatus('Box cleared. Enter a replacement if this box is required, then press Check.');
+        return;
+      }
+      if (settings.entryMode === 'not-guided') {
+        var targetId = selectedId && values[selectedId] ? selectedId : entryHistory.pop();
+        if (!targetId) return;
+        values[targetId] = '';
+        entryHistory = entryHistory.filter(function(previousId) { return previousId !== targetId; });
+        selectedId = targetId;
+        clearMarks();
+        render();
+        updateSpeech();
+        setStatus('Box cleared.');
+        savePublicState();
+        return;
+      }
+      if (guideIndex <= 0) return;
+      guideIndex -= 1;
+      var id = currentId();
+      if (id) values[id] = '';
+      selectedId = currentId();
+      clearMarks();
+      render();
+      updateSpeech();
+      setStatus('');
+      savePublicState();
+    }
+
+    function startPointerDrag(event, digit) {
+      event.preventDefault();
+      var ghost = document.createElement('div');
+      ghost.className = 'drag-ghost';
+      ghost.textContent = digit;
+      document.body.appendChild(ghost);
+
+      pointerDrag = {
+        digit: digit,
+        pointerId: event.pointerId,
+        ghost: ghost,
+        wasDragging: false,
+        lastTarget: null,
+        startX: event.clientX,
+        startY: event.clientY
+      };
+
+      moveGhost(event.clientX, event.clientY);
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp, { once: true });
+      document.addEventListener('pointercancel', onPointerCancel, { once: true });
+    }
+
+    function moveGhost(x, y) {
+      if (!pointerDrag) return;
+      pointerDrag.ghost.style.left = x + 'px';
+      pointerDrag.ghost.style.top = y + 'px';
+    }
+
+    function onPointerMove(event) {
+      if (!pointerDrag || event.pointerId !== pointerDrag.pointerId) return;
+      event.preventDefault();
+      moveGhost(event.clientX, event.clientY);
+
+      var dx = Math.abs(event.clientX - pointerDrag.startX);
+      var dy = Math.abs(event.clientY - pointerDrag.startY);
+      if (dx + dy > 12) pointerDrag.wasDragging = true;
+
+      document.querySelectorAll('.drop.hovered').forEach(function(el) { el.classList.remove('hovered'); });
+      pointerDrag.ghost.style.display = 'none';
+      var target = document.elementFromPoint(event.clientX, event.clientY);
+      target = target ? target.closest('.drop') : null;
+      pointerDrag.ghost.style.display = 'flex';
+
+      if (target) {
+        target.classList.add('hovered');
+        pointerDrag.lastTarget = target;
+      } else {
+        pointerDrag.lastTarget = null;
+      }
+    }
+
+    function onPointerUp(event) {
+      if (!pointerDrag || event.pointerId !== pointerDrag.pointerId) return;
+      event.preventDefault();
+      var target = pointerDrag.lastTarget;
+      var digit = pointerDrag.digit;
+      var didDrag = pointerDrag.wasDragging;
+      cleanupPointerDrag();
+      if (target && didDrag) fillGuidedBox(target.dataset.id, digit);
+    }
+
+    function onPointerCancel() {
+      cleanupPointerDrag();
+    }
+
+    function cleanupPointerDrag() {
+      if (!pointerDrag) return;
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('pointercancel', onPointerCancel);
+      document.querySelectorAll('.drop.hovered').forEach(function(el) { el.classList.remove('hovered'); });
+      pointerDrag.ghost.remove();
+      var dragged = pointerDrag.wasDragging;
+      pointerDrag = { wasDragging: dragged };
+      setTimeout(function() { pointerDrag = null; }, 40);
+    }
+
+    function clearMarks() {
+      document.querySelectorAll('.drop').forEach(function(el) {
+        el.classList.remove('correct');
+        el.classList.remove('wrong');
+      });
+    }
+
+    function checkWork() {
+      var spec = specForProblem(topNum, bottomNum);
+      var allCorrect = true;
+      var wrongIds = {};
+      var requiredAnswerIds = spec.answerBoxes.filter(function(box) {
+        return spec.expected[box.id] !== '';
+      }).map(function(box) { return box.id; });
+      var answersComplete = requiredAnswerIds.every(function(id) { return /^[0-9]$/.test(values[id] || ''); });
+      clearMarks();
+
+      Object.keys(spec.expected).forEach(function(id) {
+        var optionalThousandsCarry = settings.entryMode === 'not-guided' && id === 'carry-0';
+        var ok = optionalThousandsCarry
+          ? (values[id] === '' || values[id] === spec.expected[id])
+          : values[id] === spec.expected[id];
+        var el = document.getElementById(id);
+        if (!ok) {
+          allCorrect = false;
+          wrongIds[id] = true;
+          if (answersComplete) {
+            currentHadIncorrect = true;
+            currentMissedPlaces[missedPlaceName(id)] = true;
+            if (id.indexOf('carry-') === 0 && spec.expected[id] !== '' && values[id] === '') currentCarryOmissions[id] = true;
+            if (id.indexOf('carry-') === 0 && spec.expected[id] === '' && values[id] !== '') currentExtraCarries[id] = true;
+            if (!(id.indexOf('carry-') === 0 && values[id] === '')) {
+              var errorType = classifyArithmeticError(id, values[id]);
+              if (errorType === 'forgot-added-carry') {
+                currentForgotAddedCarry[id] = true;
+              } else if (errorType === 'multiplication') {
+                currentMultiplicationErrors[id] = true;
+                var fact = underlyingFactForBox(id);
+                if (fact) currentMissedFacts[fact] = true;
+              }
+            }
+          }
+        }
+        if (el && values[id] !== '') el.classList.add(ok ? 'correct' : 'wrong');
+      });
+
+      if (allCorrect) {
+        correctionMode = false;
+        correctionTargets = {};
+        if (!answeredCurrent) {
+          answeredCurrent = true;
+          correctCount += 1;
+          waitingForColorPick = settings.reward === 'rainbow';
+          stars += 1;
+          updateMiniReward();
+          celebrate();
+          bigRewardBurst();
+          recordCompletedQuestion();
+        }
+
+        if (isCollectionReward() && currentQuestionIndex >= MAX_COUNT - 1) {
+          setStatus('Correct. Final ' + rewardTheme().singular + ' collected.');
+          document.getElementById('speech').textContent = 'Final ' + rewardTheme().singular + ' collected.';
+        } else if (isCollectionReward()) {
+          setStatus('Correct. ' + capitalise(rewardTheme().singular) + ' collected. Next question coming up.');
+          document.getElementById('speech').textContent = capitalise(rewardTheme().singular) + ' collected. Next question coming up.';
+        } else if (currentQuestionIndex >= MAX_COUNT - 1) {
+          setStatus('Correct. Pick your final rainbow color.');
+          document.getElementById('speech').textContent = 'Correct. Pick your final rainbow color.';
+        } else {
+          setStatus('Correct. Pick a rainbow color.');
+          document.getElementById('speech').textContent = 'Great job! Pick a color for your rainbow stripe.';
+        }
+
+        updateRainbowReward();
+        updateQuizDisplay();
+        showEarnedRewardToast();
+        savePublicState();
+        if (isCollectionReward()) scheduleAutoAdvance();
+      } else {
+        if (answersComplete) {
+          correctionMode = true;
+          correctionTargets = wrongIds;
+          selectedId = null;
+          render();
+          setStatus('Some boxes need fixing. Tap a marked box and replace its digit.');
+          document.getElementById('speech').textContent = 'Tap a marked box, then choose the replacement digit.';
+        } else {
+          setStatus('Keep going. Finish all required answer boxes before this check counts in the report.');
+        }
+        savePublicState();
+      }
+    }
+
+    function clearWork() {
+      var spec = specForProblem(topNum, bottomNum);
+      resetValuesForSpec(spec);
+      render();
+      updateSpeech();
+      setStatus('');
+      updateRainbowReward();
+      updateQuizDisplay();
+    }
+
+    function clearCurrentWork() {
+      clearWork();
+      savePublicState();
+    }
+
+    function showHint() {
+      currentHintUsed = true;
+      if (settings.entryMode === 'not-guided') {
+        document.getElementById('speech').textContent = 'Choose any answer or carry box. Tap the box, then choose a number, or drag a number directly into it.';
+        return;
+      }
+      var id = currentId();
+      if (!id) {
+        document.getElementById('speech').textContent = 'All done. Press Check.';
+      } else if (id.indexOf('answer-3') === 0) {
+        document.getElementById('speech').textContent = 'Start with the ones place.';
+      } else if (id.indexOf('carry-') === 0) {
+        document.getElementById('speech').textContent = 'Put the carry in the small red box above the next column.';
+      } else {
+        document.getElementById('speech').textContent = 'Keep moving left: tens place, then hundreds place.';
+      }
+    }
+
+    function updateSpeech() {
+      if (settings.entryMode === 'not-guided') {
+        document.getElementById('speech').textContent = selectedId
+          ? 'Box selected. Choose a number or drag a number into this box.'
+          : 'Choose any answer or carry box.';
+        return;
+      }
+      var id = currentId();
+      var speech = document.getElementById('speech');
+      if (!id) {
+        speech.textContent = 'All boxes are filled. Press Check.';
+        return;
+      }
+      if (id === 'answer-3') {
+        speech.textContent = 'Start in the ones place.';
+      } else if (id === 'answer-2') {
+        speech.textContent = 'Now fill the tens place.';
+      } else if (id === 'answer-1') {
+        speech.textContent = 'Now fill the hundreds place.';
+      } else if (id === 'answer-0') {
+        speech.textContent = 'Put the last digit in the thousands place.';
+      } else if (id.indexOf('carry-') === 0) {
+        speech.textContent = 'Put the carry number in the red box above the next column.';
+      }
+    }
+
+    function setStatus(text) {
+      document.getElementById('status').textContent = text;
+    }
+
+    function missedPlaceName(id) {
+      if (id.indexOf('carry-') === 0) return 'carry boxes';
+      return { 'answer-3': 'ones place', 'answer-2': 'tens place', 'answer-1': 'hundreds place', 'answer-0': 'thousands place' }[id] || 'answer boxes';
+    }
+
+    function underlyingFactForBox(id) {
+      var topDigits = digits(topNum);
+      var digit = null;
+      if (id === 'answer-3' || id === 'carry-2') digit = topDigits[2];
+      if (id === 'answer-2' || id === 'carry-1') digit = topDigits[1];
+      if (id === 'answer-1' || id === 'answer-0' || id === 'carry-0') digit = topDigits[0];
+      return digit === null ? null : digit + ' × ' + bottomNum;
+    }
+
+    function classifyArithmeticError(id, enteredValue) {
+      if (!/^[0-9]$/.test(enteredValue || '')) return null;
+      var topDigits = digits(topNum);
+      var onesCarry = Math.floor((topDigits[2] * bottomNum) / 10);
+      var tensRaw = topDigits[1] * bottomNum;
+      var tensCarry = Math.floor((tensRaw + onesCarry) / 10);
+      var hundredsRaw = topDigits[0] * bottomNum;
+      var incoming = 0;
+      var raw = null;
+      var comparesCarryDigit = false;
+      if (id === 'answer-2' || id === 'carry-1') { incoming = onesCarry; raw = tensRaw; comparesCarryDigit = id === 'carry-1'; }
+      if (id === 'answer-1' || id === 'answer-0' || id === 'carry-0') { incoming = tensCarry; raw = hundredsRaw; comparesCarryDigit = id !== 'answer-1'; }
+      if (raw !== null && incoming > 0) {
+        var withoutIncoming = comparesCarryDigit ? Math.floor(raw / 10) : raw % 10;
+        if (Number(enteredValue) === withoutIncoming) return 'forgot-added-carry';
+      }
+      return 'multiplication';
+    }
+
+    function recordCompletedQuestion() {
+      learningReport.completed += 1;
+      if (currentHadIncorrect) {
+        learningReport.retried += 1;
+        var multiplier = '×' + bottomNum;
+        learningReport.byMultiplier[multiplier] = (learningReport.byMultiplier[multiplier] || 0) + 1;
+        Object.keys(currentMissedPlaces).forEach(function(place) {
+          learningReport.missedPlaces[place] = (learningReport.missedPlaces[place] || 0) + 1;
+        });
+        Object.keys(currentMissedFacts).forEach(function(fact) {
+          learningReport.missedFacts[fact] = (learningReport.missedFacts[fact] || 0) + 1;
+        });
+        learningReport.carryOmissions += Object.keys(currentCarryOmissions).length;
+        learningReport.extraCarries += Object.keys(currentExtraCarries).length;
+        learningReport.multiplicationErrors += Object.keys(currentMultiplicationErrors).length;
+        learningReport.forgotAddedCarry += Object.keys(currentForgotAddedCarry).length;
+        learningReport.recentMisses.unshift(topNum + ' × ' + bottomNum);
+        learningReport.recentMisses = learningReport.recentMisses.slice(0, 8);
+        var details = [];
+        var facts = Object.keys(currentMissedFacts);
+        if (facts.length) details.push('review ' + facts.join(', '));
+        if (Object.keys(currentCarryOmissions).length) details.push('carry box left blank');
+        if (Object.keys(currentExtraCarries).length) details.push('extra carry entered');
+        if (Object.keys(currentForgotAddedCarry).length) details.push('forgot to add the incoming carry');
+        if (Object.keys(currentMultiplicationErrors).length && !facts.length) details.push('multiplication calculation needs review');
+        learningReport.recentDetails.unshift(topNum + ' × ' + bottomNum + (details.length ? ' — ' + details.join('; ') : ' — needed another try'));
+        learningReport.recentDetails = learningReport.recentDetails.slice(0, 8);
+      } else {
+        learningReport.firstTry += 1;
+      }
+      if (currentHintUsed) learningReport.hints += 1;
+      renderLearningReport();
+      savePublicState();
+    }
+
+    function strongestReportItem(group) {
+      var keys = Object.keys(group || {});
+      if (!keys.length) return null;
+      keys.sort(function(a, b) { return group[b] - group[a]; });
+      return keys[0];
+    }
+
+    function renderLearningReport() {
+      var completed = learningReport.completed;
+      document.getElementById('reportCompleted').textContent = String(completed);
+      document.getElementById('reportFirstTry').textContent = completed ? Math.round((learningReport.firstTry / completed) * 100) + '%' : '—';
+      document.getElementById('reportRetries').textContent = String(learningReport.retried);
+      var multiplier = strongestReportItem(learningReport.byMultiplier);
+      var place = strongestReportItem(learningReport.missedPlaces);
+      var fact = strongestReportItem(learningReport.missedFacts);
+      var guidance = document.getElementById('reportGuidance');
+      if (!completed) {
+        guidance.textContent = 'Complete a few questions to see practice guidance.';
+      } else if (!learningReport.retried) {
+        guidance.textContent = 'No repeated difficulty yet. Continue the current range and watch for emerging patterns.';
+      } else {
+        guidance.textContent = 'Consider extra practice with ' + (multiplier || 'the current multiplier range') +
+          (place ? ', especially the ' + place : '') + '. ' + learningReport.hints + ' completed question' + (learningReport.hints === 1 ? ' used' : 's used') + ' a hint.';
+      }
+      var specifics = [];
+      if (fact) specifics.push('Most repeated digit fact: ' + fact + ' (' + learningReport.missedFacts[fact] + ' time' + (learningReport.missedFacts[fact] === 1 ? '' : 's') + ').');
+      if (learningReport.multiplicationErrors) specifics.push('Multiplication fact errors: ' + learningReport.multiplicationErrors + '.');
+      if (learningReport.forgotAddedCarry) specifics.push('Forgot to add the incoming carry: ' + learningReport.forgotAddedCarry + ' time' + (learningReport.forgotAddedCarry === 1 ? '' : 's') + '.');
+      if (learningReport.carryOmissions) specifics.push('Carry boxes were left blank ' + learningReport.carryOmissions + ' time' + (learningReport.carryOmissions === 1 ? '' : 's') + '.');
+      if (learningReport.extraCarries) specifics.push('An unnecessary carry was entered ' + learningReport.extraCarries + ' time' + (learningReport.extraCarries === 1 ? '' : 's') + '.');
+      document.getElementById('reportSpecifics').textContent = specifics.join(' ');
+      var recent = document.getElementById('reportRecent');
+      recent.innerHTML = '';
+      learningReport.recentDetails.forEach(function(problem) {
+        var li = document.createElement('li');
+        li.textContent = problem;
+        recent.appendChild(li);
+      });
+      document.getElementById('createFocusButton').disabled = !Object.keys(learningReport.missedFacts).length && !learningReport.carryOmissions && !learningReport.forgotAddedCarry;
+    }
+
+    function requestClearLearningReport() {
+      var button = document.getElementById('clearReportButton');
+      if (!button.classList.contains('confirming')) {
+        button.classList.add('confirming');
+        button.textContent = 'Tap Again to Clear Report';
+        reportResetTimer = window.setTimeout(function() {
+          button.classList.remove('confirming');
+          button.textContent = 'Clear Learning Report';
+        }, 5000);
+        return;
+      }
+      if (reportResetTimer !== null) window.clearTimeout(reportResetTimer);
+      reportResetTimer = null;
+      learningReport = emptyLearningReport();
+      button.classList.remove('confirming');
+      button.textContent = 'Clear Learning Report';
+      renderLearningReport();
+      savePublicState();
+    }
+
+    function makeQuestionPool() {
+      return [
+        [123, 2], [146, 2], [257, 2], [368, 2], [479, 2],
+        [512, 2], [624, 2], [735, 2], [846, 2], [957, 2],
+        [123, 4], [124, 6], [132, 3], [147, 5], [156, 7],
+        [203, 4], [218, 6], [234, 6], [249, 8], [305, 7],
+        [326, 5], [347, 4], [408, 8], [452, 6], [567, 7],
+        [678, 8], [789, 9], [236, 4], [375, 6], [624, 7],
+        [214, 5], [268, 3], [319, 4], [441, 7], [562, 8],
+        [615, 6], [728, 5], [842, 3], [954, 4], [486, 7],
+        [136, 9], [247, 9], [358, 9], [469, 9], [512, 9],
+        [624, 9], [735, 9], [846, 9], [957, 9]
+      ];
+    }
+
+    function randomUnit() {
+      if (window.crypto && window.crypto.getRandomValues) {
+        var array = new Uint32Array(1);
+        window.crypto.getRandomValues(array);
+        return array[0] / 4294967296;
+      }
+      return Math.random();
+    }
+
+    function shuffleArray(arr) {
+      var copy = arr.slice();
+      for (var i = copy.length - 1; i > 0; i--) {
+        var j = Math.floor(randomUnit() * (i + 1));
+        var temp = copy[i];
+        copy[i] = copy[j];
+        copy[j] = temp;
+      }
+      return copy;
+    }
+
+    function focusedQuestionPool() {
+      return makeQuestionPool();
+    }
+
+    function buildQuizQuestions() {
+      if (focusQuestionMode) {
+        focusQuestionMode = false;
+        return buildFocusQuestions();
+      }
+      var result = [];
+      var used = {};
+      while (result.length < 10) {
+        var multiplier = settings.multiplier === 'mixed'
+          ? 2 + Math.floor(randomUnit() * 8)
+          : Number(settings.multiplier);
+        var top = 100 + Math.floor(randomUnit() * 900);
+        var key = top + 'x' + multiplier;
+        if (used[key]) continue;
+        used[key] = true;
+        result.push([top, multiplier]);
+      }
+      return result;
+    }
+
+    function buildFocusQuestions() {
+      var facts = Object.keys(learningReport.missedFacts).sort(function(a, b) {
+        return learningReport.missedFacts[b] - learningReport.missedFacts[a];
+      });
+      var result = [];
+      var used = {};
+      while (result.length < 10) {
+        var fact = facts.length ? facts[result.length % facts.length] : null;
+        var parts = fact ? fact.split(' × ') : [];
+        var targetDigit = parts.length === 2 ? Number(parts[0]) : 7 + Math.floor(randomUnit() * 3);
+        var multiplier = parts.length === 2 ? Number(parts[1]) : 6 + Math.floor(randomUnit() * 4);
+        var carryFocus = !facts.length && learningReport.forgotAddedCarry > 0;
+        var topDigits = carryFocus
+          ? [6 + Math.floor(randomUnit() * 4), 6 + Math.floor(randomUnit() * 4), 6 + Math.floor(randomUnit() * 4)]
+          : [1 + Math.floor(randomUnit() * 9), Math.floor(randomUnit() * 10), Math.floor(randomUnit() * 10)];
+        var positions = targetDigit === 0 ? [1,2] : [0,1,2];
+        topDigits[positions[Math.floor(randomUnit() * positions.length)]] = targetDigit;
+        var top = Number(topDigits.join(''));
+        var key = top + 'x' + multiplier;
+        if (used[key]) continue;
+        used[key] = true;
+        result.push([top, multiplier]);
+      }
+      return result;
+    }
+
+    function createQuestionsFromMissedWork() {
+      if (!Object.keys(learningReport.missedFacts).length && !learningReport.carryOmissions && !learningReport.forgotAddedCarry) return;
+      settings.sessionLength = 10;
+      focusQuestionMode = true;
+      startRandomQuiz();
+      writeControls();
+      document.getElementById('settingsStatus').textContent = 'Focused 10-question set created from missed digit facts and carry patterns.';
+      closeParentPanel();
+    }
+
+    function startRandomQuiz() {
+      hideRewardToast();
+      if (autoAdvanceTimer !== null) window.clearTimeout(autoAdvanceTimer);
+      autoAdvanceTimer = null;
+      STANDARD_COUNT = 10;
+      MAX_COUNT = 10;
+      quizQuestions = buildQuizQuestions();
+      currentQuestionIndex = 0;
+      correctCount = 0;
+      stripeColors = new Array(MAX_COUNT).fill(null);
+      waitingForColorPick = false;
+      stars = 0;
+      document.getElementById('stars').textContent = '';
+      document.getElementById('bonusMessage').textContent = settings.reward === 'rainbow'
+        ? 'Earn one rainbow stripe for each correct answer.'
+        : 'Collect one ' + rewardTheme().singular + ' for each correct answer.';
+      loadCurrentQuestion();
+      updateRainbowReward();
+      updateQuizDisplay();
+      savePublicState();
+    }
+
+    function loadCurrentQuestion() {
+      if (!quizQuestions.length) startRandomQuiz();
+      var q = quizQuestions[currentQuestionIndex];
+      topNum = q[0];
+      bottomNum = q[1];
+      currentHadIncorrect = false;
+      currentHintUsed = false;
+      currentMissedPlaces = {};
+      currentMissedFacts = {};
+      currentCarryOmissions = {};
+      currentExtraCarries = {};
+      currentMultiplicationErrors = {};
+      currentForgotAddedCarry = {};
+      correctionMode = false;
+      correctionTargets = {};
+      clearWork();
+      updateRainbowReward();
+    }
+
+    function scheduleAutoAdvance() {
+      if (autoAdvanceTimer !== null) window.clearTimeout(autoAdvanceTimer);
+      autoAdvanceTimer = window.setTimeout(function() {
+        autoAdvanceTimer = null;
+        nextQuestion();
+      }, settings.reducedMotion ? 350 : 1000);
+    }
+
+    function nextQuestion() {
+      if (!answeredCurrent) {
+        setStatus('Finish this one correctly first to earn your reward.');
+        return;
+      }
+      if (waitingForColorPick) {
+        setStatus('Pick a rainbow color before going next.');
+        return;
+      }
+
+      if (currentQuestionIndex >= MAX_COUNT - 1) {
+        if (settings.sessionLength === 'endless') {
+          startRandomQuiz();
+          setStatus('New set started with 10 different problems.');
+          document.getElementById('speech').textContent = 'New set started. Keep going when you are ready.';
+          return;
+        }
+        setStatus(settings.nickname + ' finished this session. Start a new session whenever you are ready.');
+        document.getElementById('bonusMessage').textContent = settings.reward === 'rainbow'
+          ? 'Rainbow complete.'
+          : '10-piece ' + rewardTheme().title.toLowerCase() + ' collection complete.';
+        finalReward();
+        savePublicState();
+        return;
+      }
+
+      currentQuestionIndex += 1;
+      loadCurrentQuestion();
+      setStatus('');
+      updateRainbowReward();
+      savePublicState();
+    }
+
+    function getUnlockedBonusColorCount() {
+      return Math.max(0, correctCount - STANDARD_COUNT) * 2;
+    }
+
+    function getAvailableColors() {
+      var unlocked = getUnlockedBonusColorCount();
+      return baseRainbowColors.concat(specialBonusColors.slice(0, unlocked));
+    }
+
+    function bonusHasStarted() {
+      return currentQuestionIndex >= STANDARD_COUNT || stripeColors.slice(STANDARD_COUNT).some(function(c) { return !!c; });
+    }
+
+    function visibleStripeCount() {
+      if (!bonusHasStarted()) return STANDARD_COUNT;
+      var filled = 0;
+      for (var i = 0; i < stripeColors.length; i++) {
+        if (stripeColors[i]) filled = i + 1;
+      }
+      return Math.min(MAX_COUNT, Math.max(STANDARD_COUNT + 1, filled + (waitingForColorPick ? 1 : 0)));
+    }
+
+    function buildRainbowArc() {
+      var arc = document.getElementById('rainbowArc');
+      if (!arc) return;
+      arc.innerHTML = '';
+
+      var total = visibleStripeCount();
+      var isSmall = window.innerWidth <= 720;
+      var maxWidth = isSmall ? 325 : 440;
+      var maxHeight = isSmall ? 138 : 195;
+      var thickness = total <= 10 ? (isSmall ? 10 : 14) : (isSmall ? 6 : 8);
+      var widthStep = total <= 10 ? (isSmall ? 25 : 34) : (isSmall ? 13 : 18);
+      var heightStep = total <= 10 ? (isSmall ? 11 : 16) : (isSmall ? 6 : 9);
+      var topStep = total <= 10 ? (isSmall ? 5 : 7) : (isSmall ? 3 : 4);
+
+      for (var i = 0; i < total; i++) {
+        var stripe = document.createElement('div');
+        stripe.className = 'stripe' + (stripeColors[i] ? '' : ' empty');
+        stripe.style.width = (maxWidth - i * widthStep) + 'px';
+        stripe.style.height = (maxHeight - i * heightStep) + 'px';
+        stripe.style.top = (i * topStep) + 'px';
+        stripe.style.borderWidth = thickness + 'px';
+        stripe.style.borderColor = stripeColors[i] || '#e5e7eb';
+        arc.appendChild(stripe);
+      }
+    }
+
+    function buildColorPalette() {
+      var palette = document.getElementById('colorPalette');
+      if (!palette) return;
+      palette.innerHTML = '';
+
+      getAvailableColors().forEach(function(color) {
+        var btn = document.createElement('button');
+        btn.className = 'color-btn';
+        btn.style.background = color.value;
+        btn.style.borderColor = color.value === '#ffffff' ? '#d1d5db' : 'white';
+        btn.title = color.name;
+        btn.setAttribute('aria-label', color.name);
+        btn.onclick = function() { chooseStripeColor(color.value, color.name); };
+        palette.appendChild(btn);
+      });
+    }
+
+    function isCollectionReward() {
+      return settings.reward !== 'rainbow';
+    }
+
+    function rewardTheme() {
+      return REWARD_THEMES[settings.reward] || REWARD_THEMES.stars;
+    }
+
+    function capitalise(value) {
+      value = String(value || '');
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    function collectionGoal() {
+      return MAX_COUNT === 20 && currentQuestionIndex >= STANDARD_COUNT ? 20 : 10;
+    }
+
+    function updateMiniReward() {
+      var holder = document.getElementById('stars');
+      var theme = rewardTheme();
+      holder.textContent = isCollectionReward() && stars > 0
+        ? theme.marker + ' ' + stars + ' of ' + collectionGoal()
+        : '';
+    }
+
+    function hideRewardToast() {
+      var toast = document.getElementById('rewardToast');
+      if (!toast) return;
+      toast.classList.remove('show');
+      if (rewardToastTimer !== null) window.clearTimeout(rewardToastTimer);
+      rewardToastTimer = null;
+    }
+
+    function presentRewardToast(emoji, title, detail, accent, background) {
+      var toast = document.getElementById('rewardToast');
+      if (!toast) return;
+      if (rewardToastTimer !== null) window.clearTimeout(rewardToastTimer);
+      document.getElementById('rewardToastEmoji').textContent = emoji;
+      document.getElementById('rewardToastTitle').textContent = title;
+      document.getElementById('rewardToastDetail').textContent = detail;
+      toast.style.borderColor = accent || '#facc15';
+      toast.style.background = background || 'rgba(255, 255, 255, .98)';
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      rewardToastTimer = window.setTimeout(hideRewardToast, settings.reducedMotion ? 1400 : 2600);
+    }
+
+    function ensureRainbowChoicesVisible() {
+      if (settings.reward !== 'rainbow' || !waitingForColorPick) return;
+      var panel = document.getElementById('rewardPanel');
+      if (!panel) return;
+      window.setTimeout(function() {
+        var rect = panel.getBoundingClientRect();
+        var fullyUseful = rect.top >= 0 && Math.min(rect.bottom, window.innerHeight) - rect.top >= Math.min(260, rect.height);
+        if (!fullyUseful) panel.scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' });
+      }, settings.reducedMotion ? 0 : 260);
+    }
+
+    function showEarnedRewardToast() {
+      if (settings.reward === 'rainbow') {
+        presentRewardToast('🌈', 'Rainbow stripe earned!', 'Pick a color for your new stripe.', '#ff5d8f', 'rgba(255, 248, 252, .98)');
+        ensureRainbowChoicesVisible();
+        return;
+      }
+      var theme = rewardTheme();
+      var emoji = theme.emojis[Math.max(0, correctCount - 1) % theme.emojis.length];
+      presentRewardToast(
+        emoji,
+        capitalise(theme.singular) + ' earned!',
+        Math.min(correctCount, collectionGoal()) + ' of ' + collectionGoal() + ' collected',
+        theme.accent,
+        theme.background
+      );
+    }
+
+    function showStripeAddedToast(name, color) {
+      presentRewardToast('🌈', name + ' stripe added!', 'Your rainbow now has ' + correctCount + ' stripe' + (correctCount === 1 ? '' : 's') + '.', color, 'rgba(255, 255, 255, .98)');
+    }
+
+    function buildStarCollection() {
+      var holder = document.getElementById('starCollection');
+      if (!holder) return;
+      holder.innerHTML = '';
+      var total = collectionGoal();
+      var theme = rewardTheme();
+      for (var i = 0; i < total; i++) {
+        var slot = document.createElement('div');
+        slot.className = 'star-slot' + (i < correctCount ? ' filled' : '');
+        var emoji = theme.emojis[i % theme.emojis.length];
+        slot.textContent = i < correctCount ? emoji : '·';
+        if (i < correctCount) {
+          slot.style.borderColor = theme.accent;
+          slot.style.background = theme.background;
+        }
+        slot.setAttribute('aria-label', i < correctCount
+          ? capitalise(theme.singular) + ' ' + (i + 1) + ' collected'
+          : capitalise(theme.singular) + ' ' + (i + 1) + ' not collected');
+        holder.appendChild(slot);
+      }
+      holder.setAttribute('aria-label', Math.min(correctCount, total) + ' of ' + total + ' ' + theme.plural + ' collected');
+    }
+
+    function updateRainbowReward() {
+      var panel = document.getElementById('rewardPanel');
+      var rewardTitle = document.getElementById('rewardTitle');
+      var rainbowReward = document.getElementById('rainbowReward');
+      var starReward = document.getElementById('starReward');
+      var label = document.getElementById('rainbowLabel');
+      var prompt = document.getElementById('colorPrompt');
+      var palette = document.getElementById('colorPalette');
+      var complete = document.getElementById('rainbowComplete');
+      var starLabel = document.getElementById('starLabel');
+      var starComplete = document.getElementById('starComplete');
+      var nextBtn = document.getElementById('nextBtn');
+
+      if (!panel) return;
+
+      var isRainbow = settings.reward === 'rainbow';
+      var hasReward = isRainbow
+        ? stripeColors.some(function(c) { return !!c; }) || waitingForColorPick
+        : correctCount > 0;
+      panel.style.display = hasReward ? 'grid' : 'none';
+      rainbowReward.hidden = !isRainbow;
+      starReward.hidden = isRainbow;
+      rewardTitle.textContent = isRainbow ? 'Build Your Own Rainbow 🌈' : rewardTheme().title + ' ' + rewardTheme().marker;
+      updateMiniReward();
+
+      if (isRainbow) {
+        buildRainbowArc();
+        buildColorPalette();
+      } else {
+        buildStarCollection();
+      }
+
+      if (label) {
+        label.textContent = MAX_COUNT === 20 && bonusHasStarted()
+          ? 'Bonus Stripes Added to the Same Rainbow (Questions 11–20)'
+          : 'Standard Rainbow (Questions 1–10)';
+      }
+
+      if (prompt) prompt.style.display = isRainbow && waitingForColorPick ? 'block' : 'none';
+      if (palette) palette.style.display = isRainbow && waitingForColorPick ? 'flex' : 'none';
+
+      if (complete) {
+        if (stripeColors.slice(0, STANDARD_COUNT).every(function(c) { return !!c; }) && (MAX_COUNT === 10 || !bonusHasStarted())) {
+          complete.style.display = 'block';
+          complete.textContent = MAX_COUNT === 20 ? 'You made your rainbow! 🎉 Keep going for bonus colors!' : 'You made your rainbow! 🎉';
+        } else if (stripeColors.slice(0, MAX_COUNT).every(function(c) { return !!c; })) {
+          complete.style.display = 'block';
+          complete.textContent = 'You made a super rainbow with 20 stripes! 🌈✨';
+        } else {
+          complete.style.display = 'none';
+        }
+      }
+
+      if (starLabel) {
+        starLabel.textContent = MAX_COUNT === 20 && currentQuestionIndex >= STANDARD_COUNT
+          ? 'Bonus ' + rewardTheme().title + ' (Questions 11–20)'
+          : rewardTheme().title + ' (Questions 1–10)';
+      }
+      if (starComplete) {
+        if (!isRainbow && correctCount >= MAX_COUNT) {
+          starComplete.style.display = 'block';
+          starComplete.textContent = 'You collected all ' + MAX_COUNT + ' ' + rewardTheme().plural + '! ' + rewardTheme().marker + '✨';
+        } else if (!isRainbow && correctCount >= STANDARD_COUNT && MAX_COUNT === 20 && currentQuestionIndex < STANDARD_COUNT) {
+          starComplete.style.display = 'block';
+          starComplete.textContent = 'You collected 10 ' + rewardTheme().plural + '! The bonus collection is optional.';
+        } else {
+          starComplete.style.display = 'none';
+        }
+      }
+
+      if (nextBtn) {
+        nextBtn.disabled = !answeredCurrent || (isRainbow && waitingForColorPick);
+      }
+    }
+
+    function chooseStripeColor(color, name) {
+      if (settings.reward !== 'rainbow' || !waitingForColorPick) return;
+      stripeColors[currentQuestionIndex] = color;
+      waitingForColorPick = false;
+
+      var unlocked = getUnlockedBonusColorCount();
+      var specialNote = '';
+      if (correctCount > STANDARD_COUNT) {
+        var newSpecials = specialBonusColors.slice(Math.max(0, unlocked - 2), unlocked);
+        if (newSpecials.length === 2) {
+          specialNote = ' New special colors unlocked: ' + newSpecials[0].name + ' and ' + newSpecials[1].name + '.';
+        }
+      }
+
+      document.getElementById('bonusMessage').textContent = name + ' stripe added to your rainbow.' + specialNote;
+
+      if (currentQuestionIndex >= MAX_COUNT - 1) {
+        setStatus('Rainbow complete.');
+        document.getElementById('speech').textContent = 'Beautiful rainbow.';
+      } else {
+        setStatus('Rainbow stripe added. Next question coming up.');
+        document.getElementById('speech').textContent = 'Beautiful stripe. Next question coming up.';
+      }
+
+      updateRainbowReward();
+      showStripeAddedToast(name, color);
+      savePublicState();
+      scheduleAutoAdvance();
+    }
+
+    function updateQuizDisplay() {
+      var progress = document.getElementById('quizProgress');
+      var score = document.getElementById('quizScore');
+      var fill = document.getElementById('progressFill');
+
+      if (progress) {
+        if (currentQuestionIndex < STANDARD_COUNT) {
+          progress.textContent = 'Question ' + (currentQuestionIndex + 1) + ' of ' + STANDARD_COUNT;
+        } else {
+          progress.textContent = 'Bonus Question ' + (currentQuestionIndex - STANDARD_COUNT + 1) + ' of ' + (MAX_COUNT - STANDARD_COUNT);
+        }
+      }
+
+      if (score) score.textContent = 'Correct: ' + correctCount;
+
+      if (fill) {
+        if (currentQuestionIndex < STANDARD_COUNT) {
+          fill.style.width = (Math.min(correctCount, STANDARD_COUNT) * 10) + '%';
+        } else {
+          fill.style.width = (Math.min(Math.max(correctCount - STANDARD_COUNT, 0), STANDARD_COUNT) * 10) + '%';
+        }
+      }
+    }
+
+    function bigRewardBurst() {
+      var bonus = document.getElementById('bonusMessage');
+      if (!bonus) return;
+      if (isCollectionReward()) {
+        var theme = rewardTheme();
+        if (correctCount === 1) bonus.textContent = 'First ' + theme.singular + ' collected.';
+        if (correctCount === 3) bonus.textContent = '3 ' + theme.plural + ' collected.';
+        if (correctCount === 5) bonus.textContent = '5 ' + theme.plural + '. Halfway to the standard collection.';
+        if (correctCount === 8) bonus.textContent = '8 ' + theme.plural + '. Just 2 more to complete the standard collection.';
+        if (correctCount === 10) bonus.textContent = settings.sessionLength === 'endless'
+          ? '10 ' + theme.plural + ' collected. A new collection is starting.'
+          : '10 ' + theme.plural + ' collected. Collection complete.';
+        if (correctCount === 11) bonus.textContent = 'Bonus round started. Keep collecting ' + theme.plural + '.';
+        if (correctCount === 15) bonus.textContent = '15 ' + theme.plural + ' collected.';
+        if (correctCount === 20) bonus.textContent = '20 ' + theme.plural + '. Super collection complete.';
+        return;
+      }
+      if (correctCount === 1) bonus.textContent = 'First stripe unlocked. Pick any color.';
+      if (correctCount === 3) bonus.textContent = '3 stripes. Your rainbow is growing.';
+      if (correctCount === 5) bonus.textContent = '5 stripes. Halfway rainbow champion.';
+      if (correctCount === 8) bonus.textContent = '8 stripes. Almost done with the standard rainbow.';
+      if (correctCount === 10) bonus.textContent = settings.sessionLength === 'endless'
+        ? '10 stripes. Rainbow complete. A new rainbow is starting.'
+        : '10 stripes. Rainbow complete.';
+      if (correctCount === 11) bonus.textContent = 'Bonus round started. 2 special colors unlocked.';
+      if (correctCount === 15) bonus.textContent = '5 bonus stripes. Your bonus rainbow is growing.';
+      if (correctCount === 20) bonus.textContent = '20 stripes. Super rainbow complete.';
+    }
+
+    function finalReward() {
+      document.getElementById('bonusMessage').textContent = settings.nickname + ' completed 10 multiplication questions.';
+      celebrate();
+    }
+
+    function celebrate() {
+      var holder = document.getElementById('celebration');
+      holder.innerHTML = '';
+      var items = ['🌈', '⭐', '🎉', '✨', '💖', '🟣', '🟢', '🔵', '🟡', '🔴'];
+      for (var i = 0; i < 30; i++) {
+        var span = document.createElement('span');
+        span.className = 'confetti';
+        span.textContent = items[Math.floor(Math.random() * items.length)];
+        span.style.left = Math.random() * 100 + 'vw';
+        span.style.animationDelay = Math.random() * 0.35 + 's';
+        holder.appendChild(span);
+      }
+      setTimeout(function() { holder.innerHTML = ''; }, 2200);
+    }
+
+    function openParentPanel() {
+      renderLearningReport();
+      document.getElementById('parentPanel').classList.add('open');
+      document.getElementById('settingsButton').setAttribute('aria-expanded', 'true');
+      document.getElementById('settingsButton').setAttribute('aria-label', 'Close parent setup');
+    }
+
+    function closeParentPanel() {
+      document.getElementById('parentPanel').classList.remove('open');
+      document.getElementById('settingsButton').setAttribute('aria-expanded', 'false');
+      document.getElementById('settingsButton').setAttribute('aria-label', 'Open parent setup');
+    }
+
+    function applySettingsFromControls() {
+      settings = readControls();
+      applyPreferences(false);
+      startRandomQuiz();
+      writeControls();
+      document.getElementById('settingsStatus').textContent = 'New session started. Settings are saved on this device.';
+      closeParentPanel();
+    }
+
+    function restartSession() {
+      settings = readControls();
+      applyPreferences(false);
+      startRandomQuiz();
+      document.getElementById('settingsStatus').textContent = 'This session restarted with the same settings.';
+      closeParentPanel();
+    }
+
+    function clearResetConfirmation() {
+      if (resetTimer !== null) { window.clearTimeout(resetTimer); resetTimer = null; }
+      var button = document.getElementById('resetDefaultsButton');
+      button.classList.remove('confirming');
+      button.textContent = 'Reset to Defaults';
+    }
+
+    function requestResetDefaults() {
+      var button = document.getElementById('resetDefaultsButton');
+      if (!button.classList.contains('confirming')) {
+        button.classList.add('confirming');
+        button.textContent = 'Tap Again to Reset';
+        document.getElementById('settingsStatus').textContent = 'This clears this game\'s local settings and progress.';
+        resetTimer = window.setTimeout(function() {
+          clearResetConfirmation();
+          document.getElementById('settingsStatus').textContent = 'Reset cancelled. Nothing changed.';
+        }, 4000);
+        return;
+      }
+      clearResetConfirmation();
+      safeStorageRemove();
+      settings = Object.assign({}, DEFAULT_SETTINGS);
+      learningReport = emptyLearningReport();
+      renderLearningReport();
+      writeControls();
+      applyPreferences(false);
+      startRandomQuiz();
+      document.getElementById('settingsStatus').textContent = 'Defaults restored and local progress cleared.';
+    }
+
+    function updateFullscreenButton() {
+      var active = Boolean(document.fullscreenElement);
+      var button = document.getElementById('fullscreenButton');
+      button.textContent = active ? '✕' : '⛶';
+      button.setAttribute('aria-label', active ? 'Exit full screen' : 'Enter full screen');
+    }
+
+    function toggleFullscreen() {
+      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function() {});
+    }
+
+    function renderRestoredState() {
+      render();
+      updateSpeech();
+      updateMiniReward();
+      updateRainbowReward();
+      updateQuizDisplay();
+      setStatus(answeredCurrent
+        ? (waitingForColorPick ? 'Correct. Pick a rainbow colour.' : 'Correct. Next question coming up.')
+        : '');
+    }
+
+    function assertTest(condition, message) {
+      if (!condition) throw new Error(message);
+    }
+
+    function runTests() {
+      var s2346 = specForProblem(234, 6);
+      assertTest(s2346.expected['answer-3'] === '4', '234 x 6 ones digit should be 4');
+      assertTest(s2346.expected['carry-2'] === '2', '234 x 6 carry to tens should be 2');
+      assertTest(s2346.expected['answer-2'] === '0', '234 x 6 tens digit should be 0');
+      assertTest(s2346.expected['carry-1'] === '2', '234 x 6 carry to hundreds should be 2');
+      assertTest(s2346.expected['answer-1'] === '4', '234 x 6 hundreds digit should be 4');
+      assertTest(s2346.expected['answer-0'] === '1', '234 x 6 thousands digit should be 1');
+      assertTest(s2346.order[0] === 'answer-3', 'Guide should start at ones answer box');
+      assertTest(s2346.order[1] === 'carry-2', 'Guide should go to carry after ones answer when needed');
+
+      var s1234 = specForProblem(123, 4);
+      assertTest(s1234.expected['answer-3'] === '2', '123 x 4 ones digit should be 2');
+      assertTest(s1234.expected['answer-2'] === '9', '123 x 4 tens digit should be 9');
+      assertTest(s1234.expected['answer-1'] === '4', '123 x 4 hundreds digit should be 4');
+      assertTest(!s1234.expected['answer-0'], '123 x 4 should not need a thousands answer box');
+
+      var s7899 = specForProblem(789, 9);
+      assertTest(s7899.expected['answer-0'] === '7', '789 x 9 should have thousands digit 7');
+      assertTest(s7899.expected['answer-1'] === '1', '789 x 9 hundreds digit should be 1');
+      assertTest(s7899.expected['answer-2'] === '0', '789 x 9 tens digit should be 0');
+      assertTest(s7899.expected['answer-3'] === '1', '789 x 9 ones digit should be 1');
+
+      var quiz = shuffleArray(makeQuestionPool()).slice(0, 20);
+      assertTest(quiz.length === 20, 'Random quiz should have 20 questions');
+      assertTest(makeQuestionPool().length >= 20, 'Question pool should contain at least 20 questions');
+      makeQuestionPool().forEach(function(q) {
+        var spec = specForProblem(q[0], q[1]);
+        var productDigits = String(q[0] * q[1]).padStart(4, ' ').split('');
+        Object.keys(spec.expected).forEach(function(id) {
+          assertTest(/^[0-9]$/.test(spec.expected[id]), 'Every guided box should contain one valid digit');
+        });
+        var answerDigits = ['answer-0','answer-1','answer-2','answer-3'].map(function(id, index) {
+          return spec.expected[id] || (index === 0 ? '' : '0');
+        }).join('');
+        assertTest(Number(answerDigits) === q[0] * q[1], q[0] + ' x ' + q[1] + ' should build the correct product');
+      });
+
+      console.log('3 digit x 1 digit tests passed.');
+    }
+
+    runTests();
+    renderKeypad();
+    document.addEventListener('keydown', handlePhysicalKeyboard);
+    document.addEventListener('click', function(event) {
+      var button = event.target.closest && event.target.closest('button');
+      if (button) button.blur();
+    });
+    document.getElementById('settingsButton').addEventListener('click', function() {
+      if (document.getElementById('parentPanel').classList.contains('open')) closeParentPanel(); else openParentPanel();
+    });
+    document.getElementById('fullscreenButton').addEventListener('click', toggleFullscreen);
+    document.getElementById('applySettingsButton').addEventListener('click', applySettingsFromControls);
+    document.getElementById('restartSessionButton').addEventListener('click', restartSession);
+    document.getElementById('resetDefaultsButton').addEventListener('click', requestResetDefaults);
+    document.getElementById('clearReportButton').addEventListener('click', requestClearLearningReport);
+    document.getElementById('createFocusButton').addEventListener('click', createQuestionsFromMissedWork);
+    document.getElementById('displayModeSelect').addEventListener('change', function() {
+      settings.displayMode = this.value;
+      applyPreferences(true);
+      document.getElementById('settingsStatus').textContent = this.value === 'auto'
+        ? 'Auto is using the ' + automaticLayout() + ' layout for this viewport.'
+        : this.options[this.selectedIndex].text + ' layout previewed and saved.';
+    });
+    document.getElementById('largeControlsInput').addEventListener('change', function() {
+      settings.largeControls = this.checked; applyPreferences(true);
+    });
+    document.getElementById('reducedMotionInput').addEventListener('change', function() {
+      settings.reducedMotion = this.checked; applyPreferences(true);
+    });
+    document.getElementById('stepPromptsSelect').addEventListener('change', function() {
+      settings.stepPrompts = this.value; applyPreferences(true);
+    });
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
+    window.addEventListener('resize', function() {
+      if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(function() {
+        resizeFrame = null;
+        if (settings.displayMode === 'auto') applyPreferences(false);
+        updateRainbowReward();
+      });
+    });
+    window.addEventListener('pagehide', savePublicState);
+
+    var restored = restorePublicState();
+    writeControls();
+    renderLearningReport();
+    applyPreferences(false);
+    if (restored) renderRestoredState(); else startRandomQuiz();
+  </script>
+</body>
+</html>
