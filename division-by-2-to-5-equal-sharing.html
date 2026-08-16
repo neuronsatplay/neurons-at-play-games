@@ -1,0 +1,656 @@
+Exit code: 0
+Wall time: 1.7 seconds
+Output:
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Division by 2–5: Equal Sharing | Neurons at Play</title>
+<style>
+  :root {
+    --bg: #fff8e7;
+    --ink: #213547;
+    --card: #ffffff;
+    --line: #f1c453;
+    --soft: #fff1b8;
+    --good: #169b62;
+    --bad: #d83367;
+    --blue: #2274e0;
+    --purple: #7c3aed;
+    --orange: #f97316;
+    --pink: #db2777;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    overscroll-behavior: none;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive, system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 12% 12%, rgba(255, 214, 102, 0.35), transparent 24%),
+      radial-gradient(circle at 88% 18%, rgba(147, 197, 253, 0.35), transparent 25%),
+      radial-gradient(circle at 18% 88%, rgba(244, 114, 182, 0.23), transparent 25%),
+      var(--bg);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+  }
+
+  .app {
+    width: min(100vw, 1120px);
+    min-height: 100vh;
+    padding: 14px;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: 9px;
+  }
+
+  .reward-card,
+  .top,
+  .answer-panel {
+    background: var(--card);
+    border: 4px solid var(--line);
+    border-radius: 28px;
+    box-shadow: 0 5px 0 #eab308;
+  }
+
+  .reward-card {
+    padding: 10px 12px;
+  }
+
+  .progress-text {
+    text-align: center;
+    font-size: clamp(21px, 2.7vw, 34px);
+    font-weight: 900;
+    color: var(--orange);
+    margin-bottom: 8px;
+  }
+
+  .reward-bar {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 7px;
+  }
+
+  .reward-slot {
+    height: clamp(24px, 3.4vw, 38px);
+    border-radius: 999px;
+    border: 3px solid #cbd5e1;
+    background: #f8fafc;
+    display: grid;
+    place-items: center;
+    font-size: clamp(16px, 2.5vw, 26px);
+    font-weight: 900;
+    opacity: 0.95;
+  }
+
+  .reward-slot.filled {
+    color: white;
+    border-color: rgba(255,255,255,0.75);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+    animation: pop 0.28s ease-out;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.7); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .top {
+    padding: 12px 16px;
+    text-align: center;
+  }
+
+  .math {
+    font-size: clamp(50px, 7.8vw, 98px);
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--purple);
+    min-height: 1.1em;
+  }
+
+  .message {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(21px, 2.9vw, 34px);
+    font-weight: 900;
+  }
+
+  .message.good { color: var(--good); }
+  .message.bad { color: var(--bad); }
+
+  .work-area {
+    display: grid;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  .work-area.person-count-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .work-area.person-count-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .work-area.person-count-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .work-area.person-count-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .zone {
+    background: var(--card);
+    border: 4px solid var(--line);
+    border-radius: 28px;
+    padding: 12px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 0 #eab308;
+    position: relative;
+  }
+
+  .zone.drag-over {
+    border-color: var(--blue);
+    background: #eef6ff;
+    transform: scale(1.01);
+  }
+
+  .zone-title {
+    font-size: clamp(20px, 2.4vw, 32px);
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 8px;
+    color: var(--pink);
+    pointer-events: none;
+  }
+
+  .bank {
+    grid-column: 1 / -1;
+    min-height: 126px;
+    justify-content: center;
+  }
+
+  .bank .zone-title {
+    display: none;
+  }
+
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-content: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 70px;
+  }
+
+  .item {
+    width: clamp(54px, 6.4vw, 76px);
+    height: clamp(54px, 6.4vw, 76px);
+    border: 3px solid #cbd5e1;
+    border-radius: 20px;
+    background: #ffffff;
+    font-size: clamp(34px, 4.8vw, 52px);
+    display: grid;
+    place-items: center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    box-shadow: 0 4px 0 #cbd5e1;
+    position: relative;
+  }
+
+  .item.selected {
+    outline: 6px solid #fbbf24;
+    outline-offset: 2px;
+  }
+
+  .item.dragging {
+    cursor: grabbing;
+    z-index: 9999;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.22);
+    transform: scale(1.12);
+    opacity: 0.96;
+  }
+
+  .count {
+    text-align: center;
+    font-size: clamp(16px, 2vw, 24px);
+    font-weight: 900;
+    margin-top: 7px;
+    color: var(--blue);
+    pointer-events: none;
+  }
+
+  .answer-panel {
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .answer-side {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .answer-label {
+    font-size: clamp(23px, 2.7vw, 34px);
+    font-weight: 900;
+    color: var(--purple);
+    text-align: center;
+  }
+
+  .answer-box {
+    width: 100%;
+    height: 62px;
+    border: 4px solid #93c5fd;
+    border-radius: 20px;
+    font-size: 42px;
+    font-weight: 900;
+    text-align: center;
+    background: #eff6ff;
+    color: var(--ink);
+    font-family: inherit;
+  }
+
+  .small-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-self: end;
+  }
+
+  .btn {
+    border: 0;
+    border-radius: 20px;
+    padding: 11px 10px;
+    font-size: clamp(18px, 2.2vw, 27px);
+    font-weight: 900;
+    cursor: pointer;
+    background: var(--soft);
+    color: var(--ink);
+    min-height: 54px;
+    font-family: inherit;
+    box-shadow: 0 4px 0 #d6a70f;
+    touch-action: manipulation;
+  }
+
+  .btn:active,
+  .key:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #94a3b8;
+  }
+
+  .btn.next {
+    background: var(--good);
+    color: #fff;
+    box-shadow: 0 4px 0 #047857;
+    grid-column: 1 / -1;
+  }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(58px, 1fr));
+    gap: 8px;
+  }
+
+  .key {
+    min-height: 58px;
+    border-radius: 18px;
+    border: 3px solid #cbd5e1;
+    background: #ffffff;
+    font-size: clamp(25px, 3.4vw, 36px);
+    font-weight: 900;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink);
+    box-shadow: 0 4px 0 #cbd5e1;
+    touch-action: manipulation;
+  }
+
+  .key.back {
+    font-size: clamp(18px, 2.6vw, 28px);
+    background: #ffe4e6;
+  }
+
+  .key.check {
+    background: #dcfce7;
+    color: #14532d;
+    font-size: clamp(18px, 2.6vw, 28px);
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  @media (max-width: 900px) {
+    .work-area.person-count-4,
+    .work-area.person-count-5 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .app {
+      padding: 8px;
+      gap: 7px;
+    }
+
+    .reward-bar {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .work-area {
+      grid-template-columns: 1fr !important;
+    }
+
+    .bank {
+      grid-column: auto;
+      min-height: 108px;
+    }
+
+    .zone {
+      min-height: 108px;
+      padding: 9px;
+    }
+
+    .answer-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .answer-side {
+      grid-template-rows: auto auto auto;
+    }
+
+    .keypad {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  button, select, input { font: inherit; }
+  button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 4px solid rgba(124,58,237,.28); outline-offset: 2px; }
+  button:disabled { cursor: default; opacity: .55; }
+  .page-shell { width: min(100vw,1120px); min-height: 100vh; padding: 12px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 9px; }
+  .brand { min-width: 0; }
+  .eyebrow { margin: 0; color: var(--orange); font: 900 12px/1.2 system-ui,sans-serif; letter-spacing: .09em; text-transform: uppercase; }
+  .topbar h1 { margin: 1px 0 0; font-size: clamp(21px,3.5vw,32px); line-height: 1.1; }
+  .header-actions { display: flex; gap: 8px; }
+  .header-btn { min-width: 48px; min-height: 48px; border: 3px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 3px 0 #eab308; font-weight: 900; cursor: pointer; touch-action: manipulation; }
+  .fullscreen-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; }
+  .parent { display: none; margin-bottom: 12px; background: #fff; border: 4px solid var(--line); border-radius: 28px; padding: 14px; box-shadow: 0 5px 0 #eab308; }
+  .parent.open { display: block; }
+  .parent h2 { margin: 0 0 4px; font-size: 20px; }
+  .parent-note { margin: 0 0 10px; color: #64748b; font: 700 13px/1.4 system-ui,sans-serif; }
+  .settings { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; }
+  .field { display: grid; gap: 4px; }
+  .field label { color: #526079; font: 850 12px/1.2 system-ui,sans-serif; }
+  .field select, .field input { width: 100%; min-height: 44px; border: 2px solid #e7c762; border-radius: 12px; background: #fff; color: var(--ink); padding: 8px; }
+  .name-fields { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 8px; margin-top: 9px; }
+  .toggles { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 9px; }
+  .toggle { display: flex; align-items: center; gap: 8px; min-height: 44px; border: 2px solid #e7c762; border-radius: 12px; padding: 8px; background: #fff; font: 800 13px/1.2 system-ui,sans-serif; }
+  .toggle input { width: 20px; height: 20px; }
+  .parent-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 9px; }
+  .parent-actions button, .report-buttons button { min-height: 44px; border: 0; border-radius: 14px; padding: 9px; color: #fff; font-weight: 900; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,.18); }
+  .apply { background: var(--good); }
+  .restart { background: var(--purple); }
+  .reset { background: #fff0f0 !important; color: #922f3b !important; border: 2px solid #efb4b4 !important; }
+  .settings-status { min-height: 18px; margin: 8px 0 0; color: #64748b; font: 700 12px/1.3 system-ui,sans-serif; }
+  .report { margin-top: 11px; padding: 11px; border: 2px solid #d7e2f0; border-radius: 15px; font-family: system-ui,sans-serif; }
+  .report summary { font-weight: 900; cursor: pointer; }
+  .report-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin: 9px 0; }
+  .report-card { text-align: center; background: #f4f7fb; border-radius: 11px; padding: 8px; }
+  .report-card strong { display: block; color: var(--purple); font-size: 19px; }
+  .report-card span { color: #64748b; font-size: 11px; }
+  .report-text, .report-list { color: #526079; font-size: 12px; font-weight: 700; }
+  .report-list { padding-left: 20px; }
+  .report-buttons { display: flex; gap: 7px; flex-wrap: wrap; }
+  .focus-btn { background: var(--good); }
+  .clear-report { background: #64748b; }
+  .app { width: 100%; min-height: calc(100vh - 82px); padding: 0; }
+  .instruction { margin: 0; text-align: center; color: #526079; font-size: clamp(17px,2.3vw,26px); font-weight: 900; }
+  .model-note { margin: 0; text-align: center; color: #526079; font-size: clamp(14px,1.8vw,19px); font-weight: 850; }
+  .work-area.model-hidden { display: none; }
+  .answer-box { pointer-events: none; caret-color: transparent; }
+  .btn.next.hidden { display: none; }
+  html[data-layout="phone"] .settings, html[data-layout="phone"] .name-fields, html[data-layout="phone"] .parent-actions { grid-template-columns: 1fr; }
+  html[data-layout="phone"] .work-area { grid-template-columns: 1fr !important; }
+  html[data-layout="phone"] .bank { grid-column: auto; }
+  html[data-layout="phone"] .answer-panel { grid-template-columns: 1fr; }
+  html[data-layout="tablet"] .settings { grid-template-columns: repeat(2,1fr); }
+  html[data-layout="tablet"] .name-fields { grid-template-columns: repeat(3,1fr); }
+  html[data-large="true"] .btn, html[data-large="true"] .key, html[data-large="true"] .header-btn { min-height: 56px; }
+  html[data-large="true"] .item { width: clamp(62px,7vw,82px); height: clamp(62px,7vw,82px); }
+  html[data-reduced="true"] * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+  @media (max-width:760px) {
+    .page-shell { padding: 8px; }
+    .settings { grid-template-columns: repeat(2,1fr); }
+    .name-fields { grid-template-columns: repeat(2,1fr); }
+    .parent-actions { grid-template-columns: 1fr; }
+    .fullscreen-label { display: none; }
+    .fullscreen-btn { width: 48px; padding: 0; }
+    .instruction { font-size: 17px; }
+  }
+  @media (max-width:430px) { .settings, .name-fields { grid-template-columns: 1fr; } .topbar h1 { font-size: 19px; } .reward-slot { min-width: 0; } }
+</style>
+</head>
+<body>
+<div class="page-shell">
+  <header class="topbar">
+    <div class="brand"><p class="eyebrow">Neurons at Play</p><h1>Division by 2–5: Equal Sharing</h1></div>
+    <div class="header-actions">
+      <button class="header-btn fullscreen-btn" id="fullscreenBtn" type="button" aria-label="Enter fullscreen"><span aria-hidden="true">⛶</span><span class="fullscreen-label">Full Screen</span></button>
+      <button class="header-btn" id="settingsBtn" type="button" aria-label="Open parent setup" aria-expanded="false">⚙️</button>
+    </div>
+  </header>
+  <section class="parent" id="parentPanel" aria-label="Parent setup">
+    <h2>Parent Setup</h2>
+    <p class="parent-note">Choose the divisor practice and sharing support. Optional names, settings, and the learning report stay only in this browser. Use nicknames, roles, or made-up names rather than identifying details.</p>
+    <div class="settings">
+      <div class="field"><label for="nickname">Optional learner nickname</label><input id="nickname" maxlength="20" value="Player" autocomplete="off"></div>
+      <div class="field"><label for="divisors">Divisors</label><select id="divisors"><option value="mixed">Mixed 2–5</option><option value="2">Only divide by 2</option><option value="3">Only divide by 3</option><option value="4">Only divide by 4</option><option value="5">Only divide by 5</option></select></div>
+      <div class="field"><label for="model">Sharing model</label><select id="model"><option value="optional">Available but optional</option><option value="required">Share equally before answering</option><option value="hidden">Hidden</option></select></div>
+      <div class="field"><label for="session">Session</label><select id="session"><option value="20">20 questions</option><option value="10">10 questions</option><option value="endless">Keep going</option></select></div>
+      <div class="field"><label for="objects">Sharing objects</label><select id="objects"><option value="original">Original mix</option><option value="toys">Toys</option><option value="treats">Treats</option><option value="nature">Nature</option><option value="space">Space</option></select></div>
+      <div class="field"><label for="layout">Layout</label><select id="layout"><option value="auto">Auto</option><option value="phone">Phone</option><option value="tablet">Tablet</option><option value="computer">Computer</option></select></div>
+    </div>
+    <div class="name-fields">
+      <div class="field"><label for="person1">First person or box</label><input id="person1" maxlength="20" value="Box 1" autocomplete="off"></div>
+      <div class="field"><label for="person2">Second person or box</label><input id="person2" maxlength="20" value="Box 2" autocomplete="off"></div>
+      <div class="field"><label for="person3">Third person or box</label><input id="person3" maxlength="20" value="Box 3" autocomplete="off"></div>
+      <div class="field"><label for="person4">Fourth person or box</label><input id="person4" maxlength="20" value="Box 4" autocomplete="off"></div>
+      <div class="field"><label for="person5">Fifth person or box</label><input id="person5" maxlength="20" value="Box 5" autocomplete="off"></div>
+    </div>
+    <div class="toggles"><label class="toggle"><input id="large" type="checkbox"> Larger controls and text</label><label class="toggle"><input id="reduced" type="checkbox"> Reduced animation</label></div>
+    <div class="parent-actions"><button class="apply" id="apply" type="button">Start with These Settings</button><button class="restart" id="restart" type="button">Restart This Session</button><button class="reset" id="reset" type="button">Reset to Defaults</button></div>
+    <p class="settings-status" id="settingsStatus" role="status"></p>
+    <details class="report">
+      <summary>Local learning report</summary>
+      <div class="report-grid"><div class="report-card"><strong id="reportCompleted">0</strong><span>completed</span></div><div class="report-card"><strong id="reportFirstTry">—</strong><span>first try</span></div><div class="report-card"><strong id="reportRetries">0</strong><span>needed another try</span></div><div class="report-card"><strong id="reportSharing">0</strong><span>used sharing model</span></div></div>
+      <p class="report-text" id="reportGuidance">Complete a few questions to see practice guidance.</p><ul class="report-list" id="reportRecent"></ul>
+      <div class="report-buttons"><button class="focus-btn" id="focusBtn" type="button" disabled>Create Questions from Missed Work</button><button class="clear-report" id="clearReport" type="button">Clear Learning Report</button></div>
+    </details>
+  </section>
+  <main class="app">
+    <section class="reward-card" aria-label="Rainbow rewards"><div class="progress-text" id="progressText">🌈 Question 1 of 20</div><div class="reward-bar" id="rewardBar"></div></section>
+    <section class="top" aria-live="polite"><div class="math" id="mathLine">10 ÷ 2 =</div><p class="instruction" id="instruction">Player, share the objects equally.</p></section>
+    <div class="message" id="message" role="status" aria-live="polite"></div>
+    <section class="work-area person-count-2" id="workArea" aria-label="Equal sharing model">
+      <div class="zone bank" id="bank" data-zone="bank" aria-label="Objects to share"><div class="zone-title"></div><div class="items" id="bankItems"></div><div class="count" id="bankCount">0 left</div></div>
+      <div class="zone person" id="personA" data-zone="personA" aria-label="First group"><div class="zone-title" id="personATitle">Box 1</div><div class="items" id="personAItems"></div><div class="count" id="personACount">0 for Box 1</div></div>
+      <div class="zone person" id="personB" data-zone="personB" aria-label="Second group"><div class="zone-title" id="personBTitle">Box 2</div><div class="items" id="personBItems"></div><div class="count" id="personBCount">0 for Box 2</div></div>
+      <div class="zone person hidden" id="personC" data-zone="personC" aria-label="Third group"><div class="zone-title" id="personCTitle">Box 3</div><div class="items" id="personCItems"></div><div class="count" id="personCCount">0 for Box 3</div></div>
+      <div class="zone person hidden" id="personD" data-zone="personD" aria-label="Fourth group"><div class="zone-title" id="personDTitle">Box 4</div><div class="items" id="personDItems"></div><div class="count" id="personDCount">0 for Box 4</div></div>
+      <div class="zone person hidden" id="personE" data-zone="personE" aria-label="Fifth group"><div class="zone-title" id="personETitle">Box 5</div><div class="items" id="personEItems"></div><div class="count" id="personECount">0 for Box 5</div></div>
+    </section>
+    <p class="model-note" id="modelNote">Tap an object, then tap a box—or drag it directly.</p>
+    <section class="answer-panel" aria-label="Answer">
+      <div class="answer-side"><div class="answer-label">Answer</div><input class="answer-box" id="answer" inputmode="none" readonly tabindex="-1" aria-label="Current answer"><div class="small-buttons"><button class="btn" id="clearBtn" type="button">Reset Sharing</button><button class="btn next hidden" id="nextBtn" type="button">Play Again</button></div></div>
+      <div class="keypad" aria-label="Number keypad"><button class="key" type="button">1</button><button class="key" type="button">2</button><button class="key" type="button">3</button><button class="key" type="button">4</button><button class="key" type="button">5</button><button class="key" type="button">6</button><button class="key" type="button">7</button><button class="key" type="button">8</button><button class="key" type="button">9</button><button class="key back" id="backBtn" type="button" aria-label="Delete last digit">⌫</button><button class="key" type="button">0</button><button class="key check" id="checkBtn" type="button">Check</button></div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var KEY='neuronsAtPlay.divisionBy2To5EqualSharing.public.v1';
+  var DEFAULTS={nickname:'Player',divisors:'mixed',model:'optional',session:'20',objects:'original',names:['Box 1','Box 2','Box 3','Box 4','Box 5'],layout:'auto',large:false,reduced:false};
+  var REWARD_COLOURS=['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e','#fb7185','#a3a3a3','#8b5e3c'];
+  var OBJECTS={
+    original:[['balloon','🎈'],['crayon','🖍️'],['car','🚗'],['teddy bear','🧸'],['apple','🍎'],['gift','🎁'],['cookie','🍪'],['star','⭐'],['rocket','🚀'],['football','⚽'],['cupcake','🧁'],['ice cream','🍦']],
+    toys:[['balloon','🎈'],['crayon','🖍️'],['car','🚗'],['teddy bear','🧸'],['gift','🎁']],
+    treats:[['cookie','🍪'],['cupcake','🧁'],['ice cream','🍦'],['apple','🍎'],['strawberry','🍓']],
+    nature:[['flower','🌻'],['leaf','🍃'],['ladybird','🐞'],['butterfly','🦋'],['acorn','🌰']],
+    space:[['rocket','🚀'],['star','⭐'],['planet','🪐'],['moon','🌙'],['satellite','🛰️']]
+  };
+  var DIVIDENDS={2:[2,4,6,8,10,12,14,16,18],3:[3,6,9,12,15,18],4:[4,8,12,16],5:[5,10,15]};
+  function $(id){return document.getElementById(id)}
+  var zones=[
+    {zone:$('personA'),title:$('personATitle'),items:$('personAItems'),count:$('personACount'),name:'personA'},
+    {zone:$('personB'),title:$('personBTitle'),items:$('personBItems'),count:$('personBCount'),name:'personB'},
+    {zone:$('personC'),title:$('personCTitle'),items:$('personCItems'),count:$('personCCount'),name:'personC'},
+    {zone:$('personD'),title:$('personDTitle'),items:$('personDItems'),count:$('personDCount'),name:'personD'},
+    {zone:$('personE'),title:$('personETitle'),items:$('personEItems'),count:$('personECount'),name:'personE'}
+  ];
+  var settings=copyDefaults(),report=emptyReport(),questions=[],index=0,current=null,answered=false,hadWrong=false,usedSharing=false,rewards=0,answer='',selected=null,drag=null,suppressClickUntil=0,focusFact=null,advanceTimer=null,resetTimer=null,reportTimer=null;
+  function copyDefaults(){return{nickname:DEFAULTS.nickname,divisors:DEFAULTS.divisors,model:DEFAULTS.model,session:DEFAULTS.session,objects:DEFAULTS.objects,names:DEFAULTS.names.slice(),layout:DEFAULTS.layout,large:DEFAULTS.large,reduced:DEFAULTS.reduced}}
+  function safeName(value,fallback){return typeof value==='string'&&value.trim()?value.trim().slice(0,20):fallback}
+  function clean(v){v=v&&typeof v==='object'?v:{};var rawNames=Array.isArray(v.names)?v.names:[];return{nickname:safeName(v.nickname,'Player'),divisors:['mixed','2','3','4','5'].indexOf(String(v.divisors))>=0?String(v.divisors):'mixed',model:['required','optional','hidden'].indexOf(v.model)>=0?v.model:'optional',session:['10','20','endless'].indexOf(v.session)>=0?v.session:'20',objects:OBJECTS[v.objects]?v.objects:'original',names:[0,1,2,3,4].map(function(i){return safeName(rawNames[i],'Box '+(i+1))}),layout:['auto','phone','tablet','computer'].indexOf(v.layout)>=0?v.layout:'auto',large:v.large===true,reduced:v.reduced===true}}
+  function emptyReport(){return{completed:0,firstTry:0,retried:0,sharingUsed:0,missedFacts:{},recent:[]}}
+  function boundedMap(v){var out={};if(v&&typeof v==='object')Object.keys(v).slice(0,24).forEach(function(k){var n=Number(v[k]);if(Number.isFinite(n)&&n>0)out[k]=Math.min(999,Math.floor(n))});return out}
+  function cleanReport(v){if(!v||typeof v!=='object')return emptyReport();return{completed:Math.min(9999,Math.max(0,Math.floor(Number(v.completed)||0))),firstTry:Math.min(9999,Math.max(0,Math.floor(Number(v.firstTry)||0))),retried:Math.min(9999,Math.max(0,Math.floor(Number(v.retried)||0))),sharingUsed:Math.min(9999,Math.max(0,Math.floor(Number(v.sharingUsed)||0))),missedFacts:boundedMap(v.missedFacts),recent:Array.isArray(v.recent)?v.recent.filter(function(x){return typeof x==='string'}).slice(0,8):[]}}
+  function safeGet(){try{return localStorage.getItem(KEY)}catch(e){return null}}
+  function safeSet(){try{localStorage.setItem(KEY,JSON.stringify({settings:settings,report:report}))}catch(e){}}
+  function restore(){var raw=safeGet();if(!raw)return;try{var saved=JSON.parse(raw);settings=clean(saved.settings);report=cleanReport(saved.report)}catch(e){settings=copyDefaults();report=emptyReport()}}
+  function shuffle(list){var a=list.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),x=a[i];a[i]=a[j];a[j]=x}return a}
+  function activeDivisors(){return settings.divisors==='mixed'?[2,3,4,5]:[Number(settings.divisors)]}
+  function sessionLength(){return settings.session==='10'?10:20}
+  function buildPool(){var pool=[];activeDivisors().forEach(function(d){DIVIDENDS[d].forEach(function(n){pool.push({dividend:n,divisor:d})})});return pool}
+  function noAdjacent(list){for(var i=1;i<list.length;i++)if(list[i].dividend===list[i-1].dividend&&list[i].divisor===list[i-1].divisor)return false;return true}
+  function buildQuestions(){
+    var length=sessionLength(),pool=buildPool(),out=[],target=focusFact;focusFact=null;
+    if(target){
+      var fillers=shuffle(pool.filter(function(q){return q.dividend!==target.dividend||q.divisor!==target.divisor})),usedTargets=0,fillerIndex=0;
+      for(var position=0;position<length;position++){
+        if(usedTargets<4&&position%3===0){out.push({dividend:target.dividend,divisor:target.divisor});usedTargets++}
+        else{out.push(fillers[fillerIndex%fillers.length]);fillerIndex++}
+      }
+      return out;
+    }
+    if(settings.divisors==='mixed'){
+      var divisorDeck=[],base=Math.floor(length/4),remaining=length%4,extras=shuffle([2,3,4,5]),factDecks={},factIndexes={};
+      [2,3,4,5].forEach(function(d){for(var count=0;count<base;count++)divisorDeck.push(d);factDecks[d]=shuffle(DIVIDENDS[d]);factIndexes[d]=0});
+      for(var extra=0;extra<remaining;extra++)divisorDeck.push(extras[extra]);
+      divisorDeck=shuffle(divisorDeck);
+      divisorDeck.forEach(function(d){if(factIndexes[d]>=factDecks[d].length){factDecks[d]=shuffle(DIVIDENDS[d]);factIndexes[d]=0}var dividend=factDecks[d][factIndexes[d]++];if(out.length&&out[out.length-1].divisor===d&&out[out.length-1].dividend===dividend&&factDecks[d].length>1){if(factIndexes[d]>=factDecks[d].length){factDecks[d]=shuffle(DIVIDENDS[d]);factIndexes[d]=0}dividend=factDecks[d][factIndexes[d]++]}out.push({dividend:dividend,divisor:d})});
+      return out;
+    }
+    while(out.length<length){
+      var cycle=shuffle(pool);
+      for(var i=0;i<cycle.length&&out.length<length;i++){
+        if(out.length&&cycle[i].dividend===out[out.length-1].dividend&&cycle[i].divisor===out[out.length-1].divisor&&cycle.length>1){var swap=(i+1)%cycle.length,x=cycle[i];cycle[i]=cycle[swap];cycle[swap]=x}
+        out.push(cycle[i]);
+      }
+    }
+    return out;
+  }
+  function automaticLayout(){var w=Math.max(1,innerWidth),h=Math.max(1,innerHeight);if(w<=600||(w<=950&&h<=500))return'phone';if(w<=1100)return'tablet';return'computer'}
+  function applyPrefs(save){document.documentElement.dataset.layout=settings.layout==='auto'?automaticLayout():settings.layout;document.documentElement.dataset.large=String(settings.large);document.documentElement.dataset.reduced=String(settings.reduced);if(save)safeSet()}
+  function initRewards(){var bar=$('rewardBar');bar.innerHTML='';for(var i=0;i<sessionLength();i++){var slot=document.createElement('div');slot.className='reward-slot';bar.appendChild(slot)}}
+  function updateRewards(){Array.from($('rewardBar').children).forEach(function(slot,i){var filled=i<rewards;slot.classList.toggle('filled',filled);slot.style.background=filled?REWARD_COLOURS[i%REWARD_COLOURS.length]:'#f8fafc';slot.textContent=filled?'🌈':''})}
+  function factKey(q){return q.dividend+' ÷ '+q.divisor}
+  function start(){clearTimeout(advanceTimer);questions=buildQuestions();index=0;rewards=0;$('nextBtn').classList.add('hidden');$('nextBtn').textContent='Play Again';initRewards();updateRewards();newQuestion()}
+  function newQuestion(){
+    clearTimeout(advanceTimer);current=questions[index];answered=false;hadWrong=false;usedSharing=false;answer='';selected=null;drag=null;
+    $('message').textContent='';$('message').className='message';$('answer').value='';$('checkBtn').disabled=false;$('nextBtn').classList.add('hidden');
+    $('mathLine').textContent=current.dividend+' ÷ '+current.divisor+' =';$('progressText').textContent='🌈 Question '+(index+1)+' of '+sessionLength();
+    $('instruction').textContent=settings.nickname+', '+(settings.model==='hidden'?'work out the answer.':'share the objects equally between '+current.divisor+' boxes.');
+    $('workArea').classList.toggle('model-hidden',settings.model==='hidden');$('modelNote').hidden=settings.model==='hidden';$('clearBtn').hidden=settings.model==='hidden';
+    configureZones();buildItems();renderAnswer();updateRewards();
+  }
+  function configureZones(){
+    $('workArea').classList.remove('person-count-2','person-count-3','person-count-4','person-count-5');$('workArea').classList.add('person-count-'+current.divisor);
+    zones.forEach(function(cfg,i){var show=i<current.divisor;cfg.zone.classList.toggle('hidden',!show);cfg.items.innerHTML='';if(show){cfg.title.textContent=settings.names[i];cfg.count.textContent='0 for '+settings.names[i]}else cfg.count.textContent=''});
+  }
+  function buildItems(){var bank=$('bankItems');bank.innerHTML='';var set=OBJECTS[settings.objects],object=set[index%set.length];for(var i=0;i<current.dividend;i++){var item=document.createElement('button');item.type='button';item.className='item';item.textContent=object[1];item.setAttribute('aria-label',object[0]+' '+(i+1));item.addEventListener('click',selectItem);item.addEventListener('pointerdown',startDrag);bank.appendChild(item)}updateCounts()}
+  function visibleZones(){return zones.slice(0,current.divisor)}
+  function itemCount(el){return el.querySelectorAll('.item').length}
+  function selectItem(e){if(Date.now()<suppressClickUntil)return;e.stopPropagation();var item=e.currentTarget;if(selected===item){item.classList.remove('selected');selected=null;return}if(selected)selected.classList.remove('selected');selected=item;item.classList.add('selected');$('message').textContent='Tap a box to move it.';$('message').className='message'}
+  function setupZone(el){el.addEventListener('click',function(e){if(e.target.closest('.item')||!selected)return;moveItem(selected,el.dataset.zone);selected.classList.remove('selected');selected=null;$('message').textContent='';$('message').className='message'})}
+  function targetItems(zoneName){if(zoneName==='bank')return $('bankItems');for(var i=0;i<zones.length;i++)if(zones[i].name===zoneName)return zones[i].items;return null}
+  function moveItem(item,zoneName){var target=targetItems(zoneName);if(!item||!target)return;resetDragStyle(item);target.appendChild(item);usedSharing=true;updateCounts()}
+  function updateCounts(){$('bankCount').textContent=itemCount($('bankItems'))+' left';visibleZones().forEach(function(cfg,i){cfg.count.textContent=itemCount(cfg.items)+' for '+settings.names[i]})}
+  function resetSharing(){var items=Array.from(document.querySelectorAll('#workArea .item'));items.forEach(function(item){resetDragStyle(item);$('bankItems').appendChild(item)});if(selected){selected.classList.remove('selected');selected=null}answer='';renderAnswer();$('message').textContent='';$('message').className='message';updateCounts()}
+  function startDrag(e){if(e.button!==undefined&&e.button!==0)return;drag={item:e.currentTarget,id:e.pointerId,startX:e.clientX,startY:e.clientY,moved:false,parent:e.currentTarget.parentElement};try{e.currentTarget.setPointerCapture(e.pointerId)}catch(err){}}
+  function moveDrag(e){if(!drag||drag.id!==e.pointerId)return;var dx=e.clientX-drag.startX,dy=e.clientY-drag.startY;if(!drag.moved&&Math.hypot(dx,dy)>8){drag.moved=true;var rect=drag.item.getBoundingClientRect();drag.offsetX=e.clientX-rect.left;drag.offsetY=e.clientY-rect.top;drag.item.style.width=rect.width+'px';drag.item.style.height=rect.height+'px';drag.item.style.position='fixed';drag.item.style.zIndex='9999';drag.item.style.pointerEvents='none';drag.item.classList.add('dragging');document.body.appendChild(drag.item)}if(drag.moved){drag.item.style.left=(e.clientX-drag.offsetX)+'px';drag.item.style.top=(e.clientY-drag.offsetY)+'px';document.querySelectorAll('.zone').forEach(function(z){z.classList.remove('drag-over')});var hit=document.elementFromPoint(e.clientX,e.clientY),zone=hit&&hit.closest('.zone');if(zone&&!zone.classList.contains('hidden'))zone.classList.add('drag-over');e.preventDefault()}}
+  function endDrag(e){if(!drag||drag.id!==e.pointerId)return;var d=drag;document.querySelectorAll('.zone').forEach(function(z){z.classList.remove('drag-over')});if(d.moved){var hit=document.elementFromPoint(e.clientX,e.clientY),zone=hit&&hit.closest('.zone');resetDragStyle(d.item);if(zone&&!zone.classList.contains('hidden'))moveItem(d.item,zone.dataset.zone);else d.parent.appendChild(d.item);suppressClickUntil=Date.now()+450;e.preventDefault()}drag=null}
+  function resetDragStyle(item){item.style.width='';item.style.height='';item.style.position='';item.style.zIndex='';item.style.pointerEvents='';item.style.left='';item.style.top='';item.classList.remove('dragging')}
+  function sharingComplete(){return itemCount($('bankItems'))===0&&visibleZones().every(function(cfg){return itemCount(cfg.items)===current.dividend/current.divisor})}
+  function renderAnswer(){$('answer').value=answer}
+  function addDigit(digit){if(answered||answer.length>=2)return;answer+=String(digit);renderAnswer();$('message').textContent='';$('message').className='message'}
+  function checkAnswer(){
+    if(answered)return;
+    if(answer===''){$('message').textContent='Put your answer in the box, then check.';$('message').className='message';return}
+    if(settings.model==='required'&&!sharingComplete()){$('message').textContent='Share every object equally between all '+current.divisor+' boxes first.';$('message').className='message';return}
+    if(Number(answer)===current.dividend/current.divisor){answered=true;$('mathLine').textContent=current.dividend+' ÷ '+current.divisor+' = '+(current.dividend/current.divisor);$('message').textContent='Yes! Great job!';$('message').className='message good';rewards++;updateRewards();record();advanceTimer=setTimeout(advance,settings.reduced?180:850);return}
+    hadWrong=true;var attempted=answer;$('message').textContent='Try again. Count one box.';$('message').className='message bad';advanceTimer=setTimeout(function(){if(!answered&&answer===attempted){answer='';renderAnswer()}},settings.reduced?250:650);
+  }
+  function record(){report.completed++;if(usedSharing)report.sharingUsed++;if(hadWrong){report.retried++;var key=factKey(current);report.missedFacts[key]=(report.missedFacts[key]||0)+1;report.recent.unshift(key+' needed another try');report.recent=report.recent.slice(0,8)}else report.firstTry++;safeSet();renderReport()}
+  function advance(){if(index+1<questions.length){index++;newQuestion();return}if(settings.session==='endless'){$('progressText').textContent='🌈 '+sessionLength()+' completed!';$('message').textContent='A new set is starting.';$('message').className='message good';advanceTimer=setTimeout(start,settings.reduced?250:1200);return}finish()}
+  function finish(){current=null;$('progressText').textContent='🌈 '+sessionLength()+' of '+sessionLength()+' done!';$('mathLine').textContent=sessionLength()+' rainbows! 🌈';$('instruction').textContent='Your reward collection is complete.';$('message').textContent='Great work!';$('message').className='message good';$('bankItems').innerHTML='';zones.forEach(function(cfg){cfg.items.innerHTML='';cfg.count.textContent=''});$('bankCount').textContent='';$('answer').value='';$('checkBtn').disabled=true;$('clearBtn').hidden=true;$('workArea').classList.add('model-hidden');$('modelNote').hidden=true;$('nextBtn').classList.remove('hidden')}
+  function strongest(){var keys=Object.keys(report.missedFacts);if(!keys.length)return null;keys.sort(function(a,b){return report.missedFacts[b]-report.missedFacts[a]});return keys[0]}
+  function renderReport(){var need=strongest();$('reportCompleted').textContent=report.completed;$('reportFirstTry').textContent=report.completed?Math.round(report.firstTry/report.completed*100)+'%':'—';$('reportRetries').textContent=report.retried;$('reportSharing').textContent=report.sharingUsed;$('reportGuidance').textContent=!report.completed?'Complete a few questions to see practice guidance.':need?'Most often missed fact: '+need+'.':'No repeated difficulty yet. Continue and watch for emerging patterns.';$('reportRecent').innerHTML='';report.recent.forEach(function(value){var li=document.createElement('li');li.textContent=value;$('reportRecent').appendChild(li)});$('focusBtn').disabled=!need}
+  function createFocus(){var need=strongest();if(!need)return;var parts=need.split(' ÷ ');focusFact={dividend:Number(parts[0]),divisor:Number(parts[1])};settings.divisors=String(focusFact.divisor);settings.session='10';write();applyPrefs(true);start();$('settingsStatus').textContent='Focused set created from missed division work. Repetition is intentional.';closePanel()}
+  function clearLearningReport(){var b=$('clearReport');if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='Tap Again to Clear Report';reportTimer=setTimeout(function(){b.classList.remove('confirm');b.textContent='Clear Learning Report'},4500);return}clearTimeout(reportTimer);report=emptyReport();b.classList.remove('confirm');b.textContent='Clear Learning Report';renderReport();safeSet()}
+  function write(){$('nickname').value=settings.nickname;$('divisors').value=settings.divisors;$('model').value=settings.model;$('session').value=settings.session;$('objects').value=settings.objects;$('layout').value=settings.layout;for(var i=0;i<5;i++)$('person'+(i+1)).value=settings.names[i];$('large').checked=settings.large;$('reduced').checked=settings.reduced}
+  function read(){var names=[];for(var i=0;i<5;i++)names.push($('person'+(i+1)).value);return clean({nickname:$('nickname').value,divisors:$('divisors').value,model:$('model').value,session:$('session').value,objects:$('objects').value,names:names,layout:$('layout').value,large:$('large').checked,reduced:$('reduced').checked})}
+  function openPanel(){renderReport();$('parentPanel').classList.add('open');$('settingsBtn').setAttribute('aria-expanded','true')}
+  function closePanel(){$('parentPanel').classList.remove('open');$('settingsBtn').setAttribute('aria-expanded','false')}
+  function fullscreenElement(){return document.fullscreenElement||document.webkitFullscreenElement||null}
+  function fullscreenSupported(){return Boolean(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen)}
+  function updateFullscreen(){var active=Boolean(fullscreenElement()),b=$('fullscreenBtn');if(!fullscreenSupported()){b.disabled=true;b.setAttribute('aria-label','Fullscreen is not available');return}b.disabled=false;b.setAttribute('aria-label',active?'Exit fullscreen':'Enter fullscreen');b.querySelector('.fullscreen-label').textContent=active?'Exit Full Screen':'Full Screen'}
+  function toggleFullscreen(){var root=document.documentElement,action;if(fullscreenElement())action=document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen?document.webkitExitFullscreen():null;else action=root.requestFullscreen?root.requestFullscreen():root.webkitRequestFullscreen?root.webkitRequestFullscreen():null;if(action&&typeof action.catch==='function')action.catch(function(){$('message').textContent='Fullscreen is not available in this browser.';$('message').className='message bad'})}
+  document.querySelectorAll('.key').forEach(function(button){var value=button.textContent.trim();if(/^\d$/.test(value))button.addEventListener('click',function(){addDigit(value)})});
+  $('backBtn').addEventListener('click',function(){if(!answered){answer=answer.slice(0,-1);renderAnswer()}});
+  $('checkBtn').addEventListener('click',checkAnswer);$('clearBtn').addEventListener('click',resetSharing);$('nextBtn').addEventListener('click',start);
+  setupZone($('bank'));zones.forEach(function(cfg){setupZone(cfg.zone)});
+  document.addEventListener('pointermove',moveDrag);document.addEventListener('pointerup',endDrag);
+  $('settingsBtn').addEventListener('click',function(){$('parentPanel').classList.contains('open')?closePanel():openPanel()});
+  $('apply').addEventListener('click',function(){settings=read();applyPrefs(true);start();write();$('settingsStatus').textContent='New session started. Settings are saved on this device.';closePanel()});
+  $('restart').addEventListener('click',function(){settings=read();applyPrefs(true);start();$('settingsStatus').textContent='This session restarted with the same settings.';closePanel()});
+  $('reset').addEventListener('click',function(){var b=this;if(!b.classList.contains('confirm')){b.classList.add('confirm');b.textContent='Tap Again to Reset';$('settingsStatus').textContent='Tap again to restore every default and clear the learning report.';resetTimer=setTimeout(function(){b.classList.remove('confirm');b.textContent='Reset to Defaults'},4500);return}clearTimeout(resetTimer);try{localStorage.removeItem(KEY)}catch(e){}settings=copyDefaults();report=emptyReport();write();applyPrefs(false);renderReport();start();b.classList.remove('confirm');b.textContent='Reset to Defaults';$('settingsStatus').textContent='Defaults and learning report cleared.';closePanel()});
+  $('focusBtn').addEventListener('click',createFocus);$('clearReport').addEventListener('click',clearLearningReport);$('layout').addEventListener('change',function(){settings.layout=this.value;applyPrefs(true)});
+  $('fullscreenBtn').addEventListener('click',toggleFullscreen);document.addEventListener('fullscreenchange',function(){updateFullscreen();if(settings.layout==='auto')applyPrefs(false)});document.addEventListener('webkitfullscreenchange',function(){updateFullscreen();if(settings.layout==='auto')applyPrefs(false)});window.addEventListener('resize',function(){if(settings.layout==='auto')applyPrefs(false)});
+  document.addEventListener('keydown',function(e){var tag=e.target&&e.target.tagName;if(['INPUT','SELECT','TEXTAREA'].indexOf(tag)>=0)return;if(/^\d$/.test(e.key)){e.preventDefault();addDigit(e.key)}else if(e.key==='Enter'){e.preventDefault();checkAnswer()}else if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();answer=answer.slice(0,-1);renderAnswer()}});
+  restore();write();applyPrefs(false);renderReport();updateFullscreen();start();
+  window.__divisionSharingTest={getState:function(){return{settings:settings,report:report,questions:questions,index:index,current:current,rewards:rewards}},start:start,check:checkAnswer,sharingComplete:sharingComplete};
+})();
+</script>
+</body>
+</html>
